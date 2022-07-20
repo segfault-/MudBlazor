@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using MudBlazor.Utilities;
@@ -22,13 +23,11 @@ namespace MudBlazor
                 .AddClass(Class)
                 .AddClass("filter-header-cell")
             .Build();
-
         private string _style =>
             new StyleBuilder()
                 .AddStyle(Column?.HeaderStyle)
                 .AddStyle(Style)
             .Build();
-
         private string _valueString;
         private double? _valueNumber;
         private Enum _valueEnum = null;
@@ -53,11 +52,11 @@ namespace MudBlazor
         {
             get
             {
-                return Column?.dataType;
+                return Column.dataType;
             }
         }
 
-        private string[] operators
+        string[] operators
         {
             get
             {
@@ -65,9 +64,9 @@ namespace MudBlazor
             }
         }
 
-        private string _operator;
+        string _operator;
 
-        private string chosenOperatorStyle(string o)
+        string chosenOperatorStyle(string o)
         {
             return o == _operator ? "color:var(--mud-palette-primary-text);background-color:var(--mud-palette-primary)" : "";
         }
@@ -79,7 +78,6 @@ namespace MudBlazor
                 return FilterOperator.IsNumber(dataType);
             }
         }
-
         private bool isEnum
         {
             get
@@ -92,7 +90,7 @@ namespace MudBlazor
 
         protected override void OnInitialized()
         {
-            _operator = operators.FirstOrDefault();
+            _operator = operators.First();
         }
 
         #region Events
@@ -153,6 +151,7 @@ namespace MudBlazor
                 Column.filterContext.FilterDefinition.Operator = _operator;
                 Column.filterContext.FilterDefinition.Value = date;
                 ApplyFilter(Column.filterContext.FilterDefinition);
+
             }
             else
             {
@@ -169,6 +168,7 @@ namespace MudBlazor
             if (_valueDate != null)
             {
                 var date = _valueDate.Value.Date;
+
 
                 // get the time component and add it to the date.
                 if (_valueTime != null)
@@ -208,6 +208,7 @@ namespace MudBlazor
                 _valueDate = null;
                 _valueTime = null;
             }
+
         }
 
         internal void ClearFilter(FilterDefinition<T> filterDefinition)

@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -29,6 +29,9 @@ namespace MudBlazor
         internal HashSet<object> _groupExpansions = new HashSet<object>();
         private List<GroupDefinition<T>> _groups = new List<GroupDefinition<T>>();
         private PropertyInfo[] _properties = typeof(T).GetProperties();
+        private MudForm _form;
+        bool success;
+        string[] errors = { };
 
         protected string _classname =>
             new CssBuilder("mud-table")
@@ -417,6 +420,11 @@ namespace MudBlazor
         [Parameter] public RenderFragment PagerContent { get; set; }
 
         /// <summary>
+        /// Defines the MudTablePager position 
+        /// </summary>
+        [Parameter] public PagerPosition PagerPosition { get; set; } = PagerPosition.Bottom;
+
+        /// <summary>
         /// Supply an async function which (re)loads filtered, paginated and sorted data from server.
         /// Table will await this func and update based on the returned TableData.
         /// Used only with ServerData
@@ -647,7 +655,12 @@ namespace MudBlazor
         }
 
         #endregion
-
+        [UnconditionalSuppressMessage("Trimming", "IL2046: 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "Suppressing because we annotating the whole component with RequiresUnreferencedCodeAttribute for information that generic type must be preserved.")]
+        protected override async Task OnInitializedAsync()
+        {
+            await InvokeServerLoadFunc();
+            await base.OnInitializedAsync();
+        }
         [UnconditionalSuppressMessage("Trimming", "IL2046: 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "Suppressing because we annotating the whole component with RequiresUnreferencedCodeAttribute for information that generic type must be preserved.")]
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -655,7 +668,6 @@ namespace MudBlazor
             {
                 _isFirstRendered = true;
                 GroupItems();
-                await InvokeServerLoadFunc();
             }
             else
             {
@@ -668,28 +680,26 @@ namespace MudBlazor
         [UnconditionalSuppressMessage("Trimming", "IL2046: 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "Suppressing because we annotating the whole component with RequiresUnreferencedCodeAttribute for information that generic type must be preserved.")]
         public override async Task SetParametersAsync(ParameterView parameters)
         {
-            var sortModeBefore = SortMode;
-            await base.SetParametersAsync(parameters);
+            parameters.SetParameterProperties(this);
 
+            var sortModeBefore = SortMode;
             if (parameters.TryGetValue(nameof(SortMode), out SortMode sortMode) && sortMode != sortModeBefore)
                 await ClearCurrentSortings();
+
+            await base.SetParametersAsync(parameters);
         }
 
         #region Methods
 
-        protected IEnumerable<T> GetItemsOfPage(int page, int pageSize)
+        protected IEnumerable<T> GetItemsOfPage(int n, int pageSize)
         {
-            if (page < 0 || pageSize <= 0)
+            if (n < 0 || pageSize <= 0)
                 return Array.Empty<T>();
 
             if (ServerData != null)
-            {
-                return QuickFilter != null
-                    ? _server_data.Items.Where(QuickFilter)
-                    : _server_data.Items;
-            }
+                return _server_data.Items;
 
-            return FilteredItems.Skip(page * pageSize).Take(pageSize);
+            return FilteredItems.Skip(n * pageSize).Take(pageSize);
         }
 
         internal async Task InvokeServerLoadFunc()
@@ -700,14 +710,7 @@ namespace MudBlazor
             Loading = true;
             StateHasChanged();
 
-            var state = new GridState<T>
-            {
-                Page = CurrentPage,
-                PageSize = RowsPerPage,
-                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
-                // Additional ToList() here to decouple clients from internal list avoiding runtime issues
-                FilterDefinitions = FilterDefinitions.ToList()
-            };
+            var state = GetDataGridState();
 
             _server_data = await ServerData(state);
 
@@ -744,20 +747,32 @@ namespace MudBlazor
             StateHasChanged();
         }
 
-        internal void ApplyFilters()
+        internal async Task ApplyFiltersAsync()
         {
-            _filtersMenuVisible = false;
-            InvokeServerLoadFunc().AndForget();
+            await _form.Validate();
+            if (success)
+            {
+                _filtersMenuVisible = false;
+                InvokeServerLoadFunc().AndForget();
+            }
         }
 
         internal void ClearFilters()
         {
             FilterDefinitions.Clear();
+            RootExpression.Rules.Clear();
         }
 
-        internal void AddFilter(Guid id, string field)
+        internal void AddFilter(Guid id, Type fieldType, string field)
         {
             var column = RenderedColumns.FirstOrDefault(x => x.Field == field);
+
+            RootExpression.Rules.Add(new Rule<T>(null, field)
+            {
+                Id = id
+            });
+
+
             FilterDefinitions.Add(new FilterDefinition<T>
             {
                 Id = id,
@@ -782,9 +797,9 @@ namespace MudBlazor
             else
                 Selection.Remove(item);
 
-            await InvokeAsync(() => SelectedItemsChangedEvent.Invoke(SelectedItems));
+            SelectedItemsChangedEvent.Invoke(SelectedItems);
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
 
         internal async Task SetSelectAllAsync(bool value)
@@ -1000,7 +1015,7 @@ namespace MudBlazor
         {
             SortChangedEvent?.Invoke(activeSortDefinitions, removedSortDefinitions);
             await InvokeServerLoadFunc();
-            StateHasChanged();
+            // StateHasChanged();
         }
 
         /// <summary>
@@ -1064,7 +1079,7 @@ namespace MudBlazor
         public void ToggleFiltersMenu()
         {
             _filtersMenuVisible = !_filtersMenuVisible;
-            StateHasChanged();
+            //StateHasChanged();
         }
 
         /// <summary>
@@ -1092,7 +1107,7 @@ namespace MudBlazor
                     await column.HideAsync();
             }
 
-            StateHasChanged();
+            //StateHasChanged();
         }
 
         internal async Task ShowAllColumnsAsync()
@@ -1103,19 +1118,19 @@ namespace MudBlazor
                     await column.ShowAsync();
             }
 
-            StateHasChanged();
+            //StateHasChanged();
         }
 
         public void ShowColumnsPanel()
         {
             _columnsPanelVisible = true;
-            StateHasChanged();
+            //StateHasChanged();
         }
 
         public void HideColumnsPanel()
         {
             _columnsPanelVisible = false;
-            StateHasChanged();
+            //StateHasChanged();
         }
 
         internal void ExternalStateHasChanged()
@@ -1196,12 +1211,33 @@ namespace MudBlazor
             }
         }
 
+        public GridState<T> GetDataGridState()
+        {
+            var state = new GridState<T>()
+            {
+                Page = CurrentPage,
+                PageSize = RowsPerPage,
+                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
+                RootExpression = RootExpression.DeepClone()
+            };
+
+            foreach (var fd in FilterDefinitions)
+            {
+                var x = fd.GenerateFilterExpression();
+                Console.WriteLine(x.ToString());
+            }
+
+            // deep copy
+            return state;
+        }
+
         #endregion
 
         #region Resize feature
 
         [Inject] private IEventListener EventListener { get; set; }
         internal bool IsResizing { get; set; }
+
 
         private ElementReference _gridElement;
         private DataGridColumnResizeService<T> _resizeService;
@@ -1230,5 +1266,34 @@ namespace MudBlazor
         }
 
         #endregion
+
+        #region COMPLEX
+        public Rule<T> RootExpression { get; set; } = new(null, null) { Condition = Condition.AND };
+
+        protected void AddRootExpressionRule()
+        {
+            RootExpression.Rules.Add(new Rule<T>(null, null));
+        }
+
+        private void SetRootButtonText(int id)
+        {
+            switch (id)
+            {
+                case 0:
+                    RootExpression.Condition = Condition.AND;
+                    break;
+                case 1:
+                    RootExpression.Condition = Condition.OR;
+                    break;
+            }
+        }
+
+        public void RemoveRule(Rule<T> rule)
+        {
+            RootExpression.Rules.Remove(rule);
+            StateHasChanged();
+        }
+        #endregion
+
     }
 }

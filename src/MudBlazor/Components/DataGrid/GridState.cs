@@ -3,18 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace MudBlazor
 {
     public class GridState<T>
     {
-        public int Page { get; set; }
+        [JsonPropertyName("Page")] public int Page { get; set; }
 
-        public int PageSize { get; set; }
+        [JsonPropertyName("PageSize")] public int PageSize { get; set; }
 
-        public ICollection<SortDefinition<T>> SortDefinitions { get; set; }
+        [JsonPropertyName("SortDefinitions")] public ICollection<SortDefinition<T>> SortDefinitions { get; set; }
 
-        public ICollection<FilterDefinition<T>> FilterDefinitions { get; set; }
+        [JsonPropertyName("RootExpression")] public Rule<T> RootExpression { get; set; }
     }
 
     public class GridData<T>

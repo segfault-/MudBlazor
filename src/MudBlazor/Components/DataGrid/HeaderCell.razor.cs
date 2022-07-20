@@ -166,7 +166,10 @@ namespace MudBlazor
                 if (DataGrid == null)
                     return false;
 
-                return DataGrid.FilterDefinitions.Any(x => x.Field == Column.Field && x.Operator != null && x.Value != null);
+                bool retVal = DataGrid.FilterDefinitions.Any(x => x.Field == Column.Field && x.Operator != null && x.Value != null);
+                retVal |= LinqRecursiveHelper.Traverse(DataGrid.RootExpression.Rules, rules => rules.Rules).Any(r => r.Field == Column.Field && r.Operator != null);
+
+                return retVal;
             }
         }
 
@@ -179,7 +182,7 @@ namespace MudBlazor
             if (_initialDirection != SortDirection.None)
             {
                 // set initial sort
-                await InvokeAsync(() => DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc()));
+                await DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc());
             }
 
             if (DataGrid != null)
@@ -303,9 +306,9 @@ namespace MudBlazor
             };
 
             if (args.CtrlKey && DataGrid.SortMode == SortMode.Multiple)
-                await InvokeAsync(() => DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc()));
+                await DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc());
             else
-                await InvokeAsync(() => DataGrid.SetSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc()));
+                await DataGrid.SetSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc());
         }
 
         internal async Task RemoveSortAsync()
@@ -316,15 +319,15 @@ namespace MudBlazor
 
         internal void AddFilter()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple)
-                DataGrid.AddFilter(Guid.NewGuid(), Column?.Field);
+            if (DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex)
+                DataGrid.AddFilter(Guid.NewGuid(), Column?.FieldType, Column?.Field);
             else if (DataGrid.FilterMode == DataGridFilterMode.ColumnFilterMenu)
                 _filtersMenuVisible = true;
         }
 
         internal void OpenFilters()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple)
+            if (DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex)
                 DataGrid.OpenFilters();
             else if (DataGrid.FilterMode == DataGridFilterMode.ColumnFilterMenu)
                 _filtersMenuVisible = true;

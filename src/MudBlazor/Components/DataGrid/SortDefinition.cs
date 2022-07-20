@@ -3,8 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json.Serialization;
 
 namespace MudBlazor
 {
-    public sealed record SortDefinition<T>(string SortBy, bool Descending, int Index, Func<T, object> SortFunc);
+    public sealed record SortDefinition<T>(
+        [property: JsonPropertyName("SortBy")] string SortBy,
+        [property: JsonPropertyName("Descending")] bool Descending,
+        [property: JsonPropertyName("Index")] int Index,
+        [property: JsonIgnore] Func<T, object> SortFunc);
 }

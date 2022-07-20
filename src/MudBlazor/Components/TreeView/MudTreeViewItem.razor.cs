@@ -33,9 +33,9 @@ namespace MudBlazor
         .Build();
 
 
-        [CascadingParameter] MudTreeView<T> MudTreeRoot { get; set; }
+        [CascadingParameter] internal MudTreeView<T> MudTreeRoot { get; set; }
 
-        [CascadingParameter] MudTreeViewItem<T> Parent { get; set; }
+        [CascadingParameter] internal MudTreeViewItem<T> Parent { get; set; }
 
         /// <summary>
         /// Custom checked icon, leave null for default.
@@ -135,7 +135,7 @@ namespace MudBlazor
 
         [Parameter]
         [Category(CategoryTypes.TreeView.Data)]
-        public HashSet<T> Items { get; set; }
+        public ICollection<T> Items { get; set; }
 
         /// <summary>
         /// Command executed when the user clicks on the CommitEdit Button.
@@ -254,6 +254,21 @@ namespace MudBlazor
         /// Tree item click event.
         /// </summary>
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        /// <summary>
+        /// Content of the item, if used completly replaced the default rendering.
+        /// This is the same as 'Content', but this also sets the cuntext to the current treeview item.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.TreeView.Behavior)]
+        public RenderFragment<MudTreeViewItem<T>> ContentWithContext { get; set; }
+
+        /// <summary>
+        /// Content of the item body, if used replaced the text, end text and end icon rendering.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.TreeView.Behavior)]
+        public RenderFragment<MudTreeViewItem<T>> BodyContent { get; set; }
 
         public bool Loading { get; set; }
 
@@ -397,5 +412,11 @@ namespace MudBlazor
                 StateHasChanged();
             }
         }
+
+        public void CallStateHasChanged()
+        {
+            this.StateHasChanged();
+        }
+
     }
 }

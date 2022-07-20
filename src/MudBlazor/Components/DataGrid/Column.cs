@@ -20,7 +20,8 @@ namespace MudBlazor
         [CascadingParameter] public MudDataGrid<T> DataGrid { get; set; }
 
         //[CascadingParameter(Name = "HeaderCell")] public HeaderCell<T> HeaderCell { get; set; }
-
+        [Parameter] public Typo HeaderTypo { get; set; } = Typo.body1;
+        [Parameter] public Typo Typo { get; set; } = Typo.body1;
         [Parameter] public T Value { get; set; }
         [Parameter] public EventCallback<T> ValueChanged { get; set; }
 
@@ -30,7 +31,6 @@ namespace MudBlazor
         /// Specifies the name of the object's property bound to the column
         /// </summary>
         [Parameter] public string Field { get; set; }
-
         [Parameter] public Type FieldType { get; set; }
         [Parameter] public string Title { get; set; }
         [Parameter] public bool HideSmall { get; set; }
@@ -263,8 +263,7 @@ namespace MudBlazor
             if (groupable && Grouping)
                 grouping = Grouping;
 
-            if (null != DataGrid)
-                DataGrid.AddColumn(this);
+            DataGrid.AddColumn(this);
 
             // Add the HeaderContext
             headerContext = new HeaderContext<T>(DataGrid);
@@ -279,12 +278,18 @@ namespace MudBlazor
                     Field = Field,
                     FieldType = FieldType,
                     Title = Title,
-                    Operator = operators.First()
+                    Operator = operators.FirstOrDefault()
                 };
+
+                if (filterContext.FilterDefinition.Operator == null)
+                {
+
+                }
             }
 
             // Add the FooterContext
             footerContext = new FooterContext<T>(DataGrid);
+
         }
 
         internal Func<T, object> GetLocalSortFunc()

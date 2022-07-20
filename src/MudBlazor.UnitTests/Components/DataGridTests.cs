@@ -2189,7 +2189,7 @@ namespace MudBlazor.UnitTests.Components
             dataGrid.FindAll(".filters-panel .mud-grid-item.d-flex").Count.Should().Be(5);
 
             // add a filter via the AddFilter method
-            await comp.InvokeAsync(() => dataGrid.Instance.AddFilter(Guid.NewGuid(), "Status"));
+            await comp.InvokeAsync(() => dataGrid.Instance.AddFilter(Guid.NewGuid(), typeof(Severity), "Status"));
 
             // check the number of filters displayed in the filters panel is 1 more because we added a filter
             dataGrid.FindAll(".filters-panel .mud-grid-item.d-flex").Count.Should().Be(6);
@@ -2208,8 +2208,8 @@ namespace MudBlazor.UnitTests.Components
             items = comp.FindAll("div.mud-list-item").ToArray();
             items[1].Click();
 
-            await comp.InvokeAsync(() => filters[0].Instance.StringValueChanged("test"));
-            await comp.InvokeAsync(() => filters[1].Instance.NumberValueChanged(55));
+            await comp.InvokeAsync(() => filters[0].Instance.StringValueChangedAsync("test"));
+            await comp.InvokeAsync(() => filters[1].Instance.NumberValueChangedAsync(55));
 
             filterDefinition.Value.Should().Be("test");
             filterDefinition2.Value.Should().Be(55);

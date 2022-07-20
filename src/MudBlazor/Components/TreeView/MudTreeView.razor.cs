@@ -12,7 +12,7 @@ namespace MudBlazor
     public partial class MudTreeView<T> : MudComponentBase
     {
         private MudTreeViewItem<T> _selectedValue;
-        private HashSet<MudTreeViewItem<T>> _selectedValues;
+        private ICollection<MudTreeViewItem<T>> _selectedValues;
         private List<MudTreeViewItem<T>> _childItems = new();
 
         protected string Classname =>
@@ -133,7 +133,7 @@ namespace MudBlazor
 
         [Parameter]
         [Category(CategoryTypes.TreeView.Data)]
-        public HashSet<T> Items { get; set; }
+        public ICollection<T> Items { get; set; }
 
         [ExcludeFromCodeCoverage]
         [Obsolete("Use SelectedValueChanged instead.", true)]
@@ -236,5 +236,10 @@ namespace MudBlazor
         }
 
         internal void AddChild(MudTreeViewItem<T> item) => _childItems.Add(item);
+
+        internal void CallStateHasChanged()
+        {
+            this.StateHasChanged();
+        }
     }
 }

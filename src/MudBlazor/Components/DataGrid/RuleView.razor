@@ -1,0 +1,107 @@
+﻿@namespace MudBlazor
+@inherits MudComponentBase
+@typeparam T
+
+<MudStack Row="true" Class="gap-3 flex-grow-1" Justify="Justify.FlexStart" AlignItems="AlignItems.Baseline">
+    <MudButtonGroup Class="flex-none ml-n4" Color="Color.Primary" Variant="Variant.Text">
+        <MudButton Class="px-0" Disabled="true" Variant="Variant.Text">@ParentCondition</MudButton>
+        <MudIconButton Class="px-0" Icon="@Icons.Material.Filled.Add" Size="Size.Small" aria-label="add" OnClick="@AddExpressionRule"></MudIconButton>
+    </MudButtonGroup>
+
+    @if (!HasChildren)
+    {
+        <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+            <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="@Field" FullWidth="true" Required="true" Dense="true">
+                @foreach (var column in Root?.RenderedColumns)
+                {
+                    <MudSelectItem Value="@column.Field">@column.computedTitle</MudSelectItem>
+                }
+            </MudSelect>
+        </MudPaper>
+
+        @if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty))
+        {
+            <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="Operator" FullWidth="true" Required="true" Dense="true">
+                    @foreach (var o in FilterOperator.GetOperatorByDataType(typeof(T).GetProperty(Leaf.Value.Field).PropertyType))
+                    {
+                        <MudSelectItem Value="@o">@o</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudPaper>
+        }
+        @if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) && typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(string) && !(Leaf.Value.Operator ?? string.Empty).EndsWith("empty"))
+        {
+            <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                <MudTextField Class="flex-shrink-1" T="string" Value="@_valueString" ValueChanged="@StringValueChanged" Required="true" />
+            </MudPaper>
+        }
+        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) && IsNumber && !(Leaf.Value.Operator ?? string.Empty).EndsWith("empty"))
+        {
+            <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                <MudNumericField Class="flex-shrink-1" T="double?" Value="@_valueNumber" ValueChanged="@NumberValueChanged" Required="true" />
+            </MudPaper>
+        }
+        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) && IsEnum)
+        {
+            @if (_isMultSelect)
+            {
+                <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                    <MudSelect T="string" Value="@_valueString" ValueChanged="@StringValueChanged" @bind-SelectedValues="@MultiSelectValues" MultiSelection="true" FullWidth="true" Required="true" Dense="true">
+                        @foreach (var item in GetEnumValues(typeof(T).GetProperty(Leaf.Value.Field).PropertyType))
+                        {
+                            <MudSelectItem T="string" Value="@((string)@item.ToString())">@item</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                    <MudSelect T="Enum" Value="@_valueEnum" ValueChanged="@EnumValueChanged" MultiSelection="false" FullWidth="true" Required="true" Dense="true">
+                        @foreach (var item in GetEnumValues(typeof(T).GetProperty(Leaf.Value.Field).PropertyType))
+                        {
+                            <MudSelectItem T="Enum" Value="@((Enum)item)">@item</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudPaper>
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) &&
+        (typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(bool) || typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(bool?)))
+        {
+            <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                <MudSelect Class="flex-shrink-1" T="bool?" Value="@_valueBool" ValueChanged="@BoolValueChanged" Required="true" Dense="true">
+                    <MudSelectItem T="bool?" Value="@(true)">true</MudSelectItem>
+                    <MudSelectItem T="bool?" Value="@(false)">false</MudSelectItem>
+                </MudSelect>
+            </MudPaper>
+        }
+        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) &&
+        (typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(DateTime)
+        ||  typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(DateTime?))
+        && !(Leaf.Value.Operator ?? "").EndsWith("empty"))
+        {
+            <MudPaper Class="flex-initial" Width="25%" Elevation="0">
+                <MudDatePicker Class="flex-shrink-1" Date="@_valueDate" DateChanged="@DateValueChanged" Required="true" />
+                <MudTimePicker Class="flex-shrink-1" Time="@_valueTime" TimeChanged="@TimeValueChanged" Required="true" />
+            </MudPaper>
+        }
+        <MudSpacer />
+
+    }
+    else
+    {
+        <MudSpacer />
+        <MudStack Row="true">
+            <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                <MudButton Disabled="true" Size="Size.Small">@Leaf.Value.Condition</MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown">
+                    <MudMenuItem OnClick="() => SetButtonText(0)">AND</MudMenuItem>
+                    <MudMenuItem OnClick="() => SetButtonText(1)">OR</MudMenuItem>
+                </MudMenu>
+            </MudButtonGroup>
+        </MudStack>
+    }
+    <MudIconButton Class="flex-none" Icon="@Icons.Outlined.Close" OnClick="() => RemoveExpressionRule()" Color="Color.Primary" Size="Size.Small"></MudIconButton>
+</MudStack>

@@ -81,6 +81,7 @@ namespace MudBlazor
             // Handle case where we have an IDictionary.
             if (typeof(T) == typeof(IDictionary<string, object>))
             {
+
                 if (dataType == typeof(string))
                 {
                     return GenerateFilterForStringTypeInIDictionary();
@@ -206,7 +207,8 @@ namespace MudBlazor
         private Expression GenerateFilterExpressionForEnumTypes(ParameterExpression parameter)
         {
             var field = Expression.Convert(Expression.Property(parameter, typeof(T).GetProperty(Field)), dataType);
-            var valueEnum = Value == null ? null : (Enum)Value;
+            FieldType = typeof(T).GetProperty(Field).PropertyType;
+            var valueEnum = Value == null ? null : GetEnumFromObject(Value);
             var _null = Expression.Convert(Expression.Constant(null), dataType);
             var isnull = Expression.Equal(field, _null);
             var isnotnull = Expression.NotEqual(field, _null);
@@ -329,8 +331,7 @@ namespace MudBlazor
                     string v = GetStringFromObject(((IDictionary<string, object>)x)[Field]);
 
                     return v != null && v.Contains(valueString);
-                }
-                ,
+                },
                 FilterOperator.String.NotContains when Value != null => x =>
                 {
                     string v = GetStringFromObject(((IDictionary<string, object>)x)[Field]);
@@ -627,7 +628,17 @@ namespace MudBlazor
             }
             else
             {
-                return (Enum)Enum.ToObject(FieldType, o);
+                Type enumType = o.GetType();
+                Type nullableEnumType = Nullable.GetUnderlyingType(enumType);
+                if (nullableEnumType != null)
+                {
+                    return (Enum)Enum.ToObject(nullableEnumType, o);
+                }
+                else
+                {
+                    return (Enum)Enum.ToObject(enumType, o);
+                }
+
             }
         }
 
@@ -660,5 +671,6 @@ namespace MudBlazor
                 return Convert.ToDateTime(o);
             }
         }
+
     }
 }

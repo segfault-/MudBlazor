@@ -21,7 +21,9 @@ else if (Column != null && !Column.Hidden)
                     }
                     else 
                     {
-                        @computedTitle
+                        <MudText Typo="@Column.HeaderTypo">
+                            @computedTitle
+                        </MudText>
                     }
                 </span>
             }
@@ -33,7 +35,9 @@ else if (Column != null && !Column.Hidden)
                 }
                 else 
                 {
-                    @computedTitle
+                    <MudText Typo="@Column.HeaderTypo">
+                        @computedTitle
+                    </MudText>
                 }
             }
             <span class="@_optionsClass">

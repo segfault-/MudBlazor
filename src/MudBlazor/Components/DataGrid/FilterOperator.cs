@@ -21,8 +21,9 @@ namespace MudBlazor
             public const string EndsWith = "ends with";
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
-
-            internal static string[] Values = GetFields(typeof(String));
+            public const string IsOneOf = "is one of";
+            public const string IsNotOneOf = "is not one of";
+            internal static readonly string[] Values = GetFields(typeof(String));
         }
 
         public static class Number
@@ -36,22 +37,23 @@ namespace MudBlazor
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
 
-            internal static string[] Values = GetFields(typeof(Number));
+            internal static readonly string[] Values = GetFields(typeof(Number));
         }
 
         public static class Enum
         {
             public const string Is = "is";
             public const string IsNot = "is not";
-
-            internal static string[] Values = GetFields(typeof(Enum));
+            public const string IsOneOf = "is one of";
+            public const string IsNotOneOf = "is not one of";
+            internal static readonly string[] Values = GetFields(typeof(Enum));
         }
 
         public static class Boolean
         {
             public const string Is = "is";
 
-            internal static string[] Values = GetFields(typeof(Boolean));
+            internal static readonly string[] Values = GetFields(typeof(Boolean));
         }
 
         public static class DateTime
@@ -65,12 +67,17 @@ namespace MudBlazor
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
 
-            internal static string[] Values = GetFields(typeof(DateTime));
+            internal static readonly string[] Values = GetFields(typeof(DateTime));
         }
 
         internal static string[] GetOperatorByDataType(Type type)
         {
-            if (type == typeof(string))
+            if (type != null)
+            {
+                type = Nullable.GetUnderlyingType(type) ?? type;
+            }
+
+            if (type == typeof(string) || type == typeof(Guid))
             {
                 return String.Values;
             }
@@ -92,12 +99,12 @@ namespace MudBlazor
             }
 
             // default
-            return new string[] { };
+            return Array.Empty<string>();
         }
 
         internal static string[] GetFields(Type type)
         {
-            List<string> fields = new List<string>();
+            var fields = new List<string>();
 
             foreach (var field in type.GetFields().Where(fi => fi.IsLiteral))
             {
@@ -107,7 +114,7 @@ namespace MudBlazor
             return fields.ToArray();
         }
 
-        internal static readonly HashSet<Type> NumericTypes = new HashSet<Type>
+        internal static readonly HashSet<Type> NumericTypes = new()
         {
             typeof(int),
             typeof(double),
@@ -140,15 +147,24 @@ namespace MudBlazor
             return NumericTypes.Contains(type);
         }
 
+        internal static bool IsString(Type type)
+        {
+            if (type == typeof(string))
+                return true;
+
+            var u = Nullable.GetUnderlyingType(type);
+            return (u != null) && u == typeof(string);
+        }
+
         internal static bool IsEnum(Type type)
         {
-            if (null == type)
+            if (type == null)
                 return false;
 
             if (type.IsEnum)
                 return true;
 
-            Type u = Nullable.GetUnderlyingType(type);
+            var u = Nullable.GetUnderlyingType(type);
             return (u != null) && u.IsEnum;
         }
 
@@ -157,17 +173,17 @@ namespace MudBlazor
             if (type == typeof(System.DateTime))
                 return true;
 
-            Type u = Nullable.GetUnderlyingType(type);
+            var u = Nullable.GetUnderlyingType(type);
             return (u != null) && u == typeof(System.DateTime);
         }
 
         internal static bool IsBoolean(Type type)
         {
-            if (type == typeof(System.Boolean))
+            if (type == typeof(bool))
                 return true;
 
-            Type u = Nullable.GetUnderlyingType(type);
-            return (u != null) && u == typeof(System.Boolean);
+            var u = Nullable.GetUnderlyingType(type);
+            return (u != null) && u == typeof(bool);
         }
     }
 }

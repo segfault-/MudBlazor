@@ -138,6 +138,14 @@ namespace MudBlazor
             }
         }
 
+        public void ClearSections(bool forceUpdate)
+        {
+            _sections?.Clear();
+            if (forceUpdate)
+            {
+                StateHasChanged();
+            }
+        }
 
         /// <summary>
         /// Rerender the component
