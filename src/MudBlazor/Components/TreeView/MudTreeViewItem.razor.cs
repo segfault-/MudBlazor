@@ -256,19 +256,9 @@ namespace MudBlazor
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
         /// <summary>
-        /// Content of the item, if used completly replaced the default rendering.
-        /// This is the same as 'Content', but this also sets the cuntext to the current treeview item.
+        /// Tree item double click event.
         /// </summary>
-        [Parameter]
-        [Category(CategoryTypes.TreeView.Behavior)]
-        public RenderFragment<MudTreeViewItem<T>> ContentWithContext { get; set; }
-
-        /// <summary>
-        /// Content of the item body, if used replaced the text, end text and end icon rendering.
-        /// </summary>
-        [Parameter]
-        [Category(CategoryTypes.TreeView.Behavior)]
-        public RenderFragment<MudTreeViewItem<T>> BodyContent { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
 
         public bool Loading { get; set; }
 
@@ -336,6 +326,23 @@ namespace MudBlazor
             {
                 Command.Execute(Value);
             }
+        }
+
+        protected async Task OnItemDoubleClicked(MouseEventArgs ev)
+        {
+            if (MudTreeRoot?.IsSelectable ?? false)
+            {
+                await MudTreeRoot.UpdateSelected(this, !_isSelected);
+            }
+
+            if (HasChild && (MudTreeRoot?.ExpandOnDoubleClick ?? false))
+            {
+                Expanded = !Expanded;
+                TryInvokeServerLoadFunc();
+                await ExpandedChanged.InvokeAsync(Expanded);
+            }
+
+            await OnDoubleClick.InvokeAsync(ev);
         }
 
         protected internal Task OnItemExpanded(bool expanded)
