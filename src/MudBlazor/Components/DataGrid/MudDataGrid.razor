@@ -11,7 +11,7 @@
         {
             @if (ToolBarContent != null)
             {
-                <MudToolBar Class="mud-table-toolbar">
+                <MudToolBar Class="mud-table-toolbar" style="position: sticky; left: 0;">
                     @ToolBarContent
                     @if (ShowMenuIcon)
                     {
@@ -32,7 +32,7 @@
             }
             @if (PagerContent != null && PagerPosition == PagerPosition.Top)
             {
-                <div class="mud-table-pagination">
+                <div class="mud-table-pagination" style="position: sticky; left: 0;">
                     @PagerContent
                 </div>
             }
@@ -308,7 +308,7 @@
             </div>
             @if (PagerContent != null && PagerPosition == PagerPosition.Bottom)
             {
-                <div class="mud-table-pagination">
+                <div class="mud-table-pagination" style="position: sticky; left: 0;">
                     @PagerContent
                 </div>
             }
