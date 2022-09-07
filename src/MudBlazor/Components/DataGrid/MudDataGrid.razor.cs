@@ -308,9 +308,17 @@ namespace MudBlazor
         [Parameter]
         public IEnumerable<T> Items
         {
-            get => _items;
+            get
+            {
+                var items = ServerData != null
+                    ? _server_data.Items
+                    : Items;
+                return items;
+            }
             set
             {
+
+
                 if (_items == value)
                     return;
 
@@ -475,35 +483,35 @@ namespace MudBlazor
         /// If MultiSelection is true, this returns the currently selected items. You can bind this property and the initial content of the HashSet you bind it to will cause these rows to be selected initially.
         /// </summary>
         [Parameter]
-        public HashSet<T> SelectedItems
-        {
-            get
-            {
-                if (!MultiSelection)
-                    if (_selectedItem is null)
-                        return new HashSet<T>(Array.Empty<T>());
-                    else
-                        return new HashSet<T>(new T[] { _selectedItem });
-                else
-                    return Selection;
-            }
-            set
-            {
-                if (value == Selection)
-                    return;
-                if (value == null)
-                {
-                    if (Selection.Count == 0)
-                        return;
-                    Selection = new HashSet<T>();
-                }
-                else
-                    Selection = value;
-                SelectedItemsChangedEvent?.Invoke(Selection);
-                SelectedItemsChanged.InvokeAsync(Selection);
-                InvokeAsync(StateHasChanged);
-            }
-        }
+        public HashSet<T> SelectedItems { get; set; } = new HashSet<T>();
+        //{
+        //    get
+        //    {
+        //        if (!MultiSelection)
+        //            if (_selectedItem is null)
+        //                return new HashSet<T>(Array.Empty<T>());
+        //            else
+        //                return new HashSet<T>(new T[] { _selectedItem });
+        //        else
+        //            return Selection;
+        //    }
+        //    set
+        //    {
+        //        if (value == Selection)
+        //            return;
+        //        if (value == null)
+        //        {
+        //            if (Selection.Count == 0)
+        //                return;
+        //            Selection = new HashSet<T>();
+        //        }
+        //        else
+        //            Selection = value;
+        //        SelectedItemsChangedEvent?.Invoke(Selection);
+        //        SelectedItemsChanged.InvokeAsync(Selection);
+        //        InvokeAsync(StateHasChanged);
+        //    }
+        //}
 
         /// <summary>
         /// Returns the item which was last clicked on in single selection mode (that is, if MultiSelection is false)
@@ -595,7 +603,6 @@ namespace MudBlazor
             }
         }
 
-        public HashSet<T> Selection { get; set; } = new HashSet<T>();
         public bool HasPager { get; set; }
         private GridData<T> _server_data = new GridData<T>() { TotalItems = 0, Items = Array.Empty<T>() };
 
@@ -793,9 +800,9 @@ namespace MudBlazor
         internal async Task SetSelectedItemAsync(bool value, T item)
         {
             if (value)
-                Selection.Add(item);
+                SelectedItems.Add(item);
             else
-                Selection.Remove(item);
+                SelectedItems.Remove(item);
 
             SelectedItemsChangedEvent.Invoke(SelectedItems);
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
@@ -805,9 +812,20 @@ namespace MudBlazor
         internal async Task SetSelectAllAsync(bool value)
         {
             if (value)
-                Selection = new HashSet<T>(Items);
+            {
+                if (_server_data != null)
+                {
+                    SelectedItems = new HashSet<T>(_server_data.Items);
+                }
+                else
+                {
+                    SelectedItems = new HashSet<T>(Items);
+                }
+            }
             else
-                Selection.Clear();
+            {
+                SelectedItems.Clear();
+            }
 
             SelectedItemsChangedEvent?.Invoke(SelectedItems);
             SelectedAllItemsChangedEvent?.Invoke(value);
@@ -1027,13 +1045,13 @@ namespace MudBlazor
         {
             if (MultiSelection)
             {
-                if (Selection.Contains(item))
+                if (SelectedItems.Contains(item))
                 {
-                    Selection.Remove(item);
+                    SelectedItems.Remove(item);
                 }
                 else
                 {
-                    Selection.Add(item);
+                    SelectedItems.Add(item);
                 }
 
                 SelectedItemsChangedEvent?.Invoke(SelectedItems);

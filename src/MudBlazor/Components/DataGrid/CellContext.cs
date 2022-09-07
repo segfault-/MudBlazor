@@ -28,7 +28,7 @@ namespace MudBlazor
 
         public CellContext(MudDataGrid<T> dataGrid, T item)
         {
-            selection = dataGrid.Selection;
+            selection = dataGrid.SelectedItems;
             Item = item;
             Actions = new CellContext<T>.CellActions
             {
