@@ -651,6 +651,7 @@ namespace MudBlazor
             }
         }
 
+        public HashSet<T> Selection { get; set; } = new HashSet<T>();
         public bool HasPager { get; set; }
         private GridData<T> _server_data = new GridData<T>() { TotalItems = 0, Items = Array.Empty<T>() };
 

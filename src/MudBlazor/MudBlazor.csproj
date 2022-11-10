@@ -28,7 +28,7 @@
   <PropertyGroup>
     <IsTrimmable>false</IsTrimmable>
     <TrimMode>link</TrimMode>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup>
