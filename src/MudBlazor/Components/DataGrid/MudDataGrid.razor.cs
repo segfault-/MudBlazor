@@ -1328,7 +1328,6 @@ namespace MudBlazor
 
             foreach (var group in _groups)
                 group.IsExpanded = false;
-            }
         }
 
         public GridState<T> GetDataGridState()
