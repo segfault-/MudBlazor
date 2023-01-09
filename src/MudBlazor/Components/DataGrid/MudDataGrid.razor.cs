@@ -356,17 +356,9 @@ namespace MudBlazor
         [Parameter]
         public IEnumerable<T> Items
         {
-            get
-            {
-                var items = ServerData != null
-                    ? _server_data.Items
-                    : Items;
-                return items;
-            }
+            get => _items;
             set
             {
-
-
                 if (_items == value)
                     return;
 
@@ -892,32 +884,21 @@ namespace MudBlazor
         internal async Task SetSelectedItemAsync(bool value, T item)
         {
             if (value)
-                SelectedItems.Add(item);
+                Selection.Add(item);
             else
-                SelectedItems.Remove(item);
+                Selection.Remove(item);
 
-            SelectedItemsChangedEvent.Invoke(SelectedItems);
+            await InvokeAsync(() => SelectedItemsChangedEvent.Invoke(SelectedItems));
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
 
         internal async Task SetSelectAllAsync(bool value)
         {
             if (value)
-            {
-                if (_server_data != null)
-                {
-                    SelectedItems = new HashSet<T>(_server_data.Items);
-                }
-                else
-                {
-                    SelectedItems = new HashSet<T>(Items);
-                }
-            }
+                Selection = new HashSet<T>(Items);
             else
-            {
-                SelectedItems.Clear();
-            }
+                Selection.Clear();
 
             SelectedItemsChangedEvent?.Invoke(SelectedItems);
             SelectedAllItemsChangedEvent?.Invoke(value);
@@ -1143,13 +1124,13 @@ namespace MudBlazor
         {
             if (MultiSelection)
             {
-                if (SelectedItems.Contains(item))
+                if (Selection.Contains(item))
                 {
-                    SelectedItems.Remove(item);
+                    Selection.Remove(item);
                 }
                 else
                 {
-                    SelectedItems.Add(item);
+                    Selection.Add(item);
                 }
 
                 SelectedItemsChangedEvent?.Invoke(SelectedItems);
@@ -1195,7 +1176,7 @@ namespace MudBlazor
         public void ToggleFiltersMenu()
         {
             _filtersMenuVisible = !_filtersMenuVisible;
-            //StateHasChanged();
+            StateHasChanged();
         }
 
         /// <summary>
@@ -1223,7 +1204,7 @@ namespace MudBlazor
                     await column.HideAsync();
             }
 
-            //StateHasChanged();
+            StateHasChanged();
         }
 
         internal async Task ShowAllColumnsAsync()
@@ -1234,19 +1215,19 @@ namespace MudBlazor
                     await column.ShowAsync();
             }
 
-            //StateHasChanged();
+            StateHasChanged();
         }
 
         public void ShowColumnsPanel()
         {
             _columnsPanelVisible = true;
-            //StateHasChanged();
+            StateHasChanged();
         }
 
         public void HideColumnsPanel()
         {
             _columnsPanelVisible = false;
-            //StateHasChanged();
+            StateHasChanged();
         }
 
         internal void ExternalStateHasChanged()

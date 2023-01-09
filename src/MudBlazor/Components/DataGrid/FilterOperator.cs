@@ -112,7 +112,7 @@ namespace MudBlazor
             }
 
             // default
-            return Array.Empty<string>();
+            return new string[] { };
         }
 
         internal static string[] GetFields([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)

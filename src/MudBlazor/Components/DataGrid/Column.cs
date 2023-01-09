@@ -278,7 +278,8 @@ namespace MudBlazor
             if (groupable && Grouping)
                 grouping = Grouping;
 
-            DataGrid.AddColumn(this);
+            if (null != DataGrid)
+                DataGrid.AddColumn(this);
 
             // Add the HeaderContext
             headerContext = new HeaderContext<T>(DataGrid);
@@ -296,11 +297,6 @@ namespace MudBlazor
                     Title = Title,
                     Operator = operators.FirstOrDefault()
                 };
-
-                if (filterContext.FilterDefinition.Operator == null)
-                {
-
-                }
             }
 
             // Add the FooterContext

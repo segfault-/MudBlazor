@@ -192,7 +192,7 @@ namespace MudBlazor
             if (_initialDirection != SortDirection.None)
             {
                 // set initial sort
-                await DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc());
+                await InvokeAsync(() => DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc()));
             }
 
             if (DataGrid != null)
@@ -317,9 +317,9 @@ namespace MudBlazor
             };
 
             if (args.CtrlKey && DataGrid.SortMode == SortMode.Multiple)
-                await DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc());
+                await InvokeAsync(() => DataGrid.ExtendSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc()));
             else
-                await DataGrid.SetSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc());
+                await InvokeAsync(() => DataGrid.SetSortAsync(Column.Field, _initialDirection, Column.GetLocalSortFunc()));
         }
 
         internal async Task RemoveSortAsync()
