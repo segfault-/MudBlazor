@@ -164,6 +164,15 @@ namespace MudBlazor
             typeof(BigInteger?),
         };
 
+        internal static bool IsString(Type type)
+        {
+            if (type == typeof(string))
+                return true;
+
+            var u = Nullable.GetUnderlyingType(type);
+            return (u != null) && u == typeof(string);
+        }
+
         internal static bool IsNumber(Type type)
         {
             return NumericTypes.Contains(type);

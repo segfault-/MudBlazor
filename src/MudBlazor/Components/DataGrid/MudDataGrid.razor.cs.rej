@@ -1,0 +1,36 @@
+diff a/src/MudBlazor/Components/DataGrid/MudDataGrid.razor.cs b/src/MudBlazor/Components/DataGrid/MudDataGrid.razor.cs	(rejected hunks)
+@@ -1344,34 +1344,5 @@
+         }
+ 
+         #endregion
+-
+-        #region COMPLEX
+-        public Rule<T> RootExpression { get; set; } = new(null, null) { Condition = Condition.AND };
+-
+-        protected void AddRootExpressionRule()
+-        {
+-            RootExpression.Rules.Add(new Rule<T>(null, null));
+-        }
+-
+-        private void SetRootButtonText(int id)
+-        {
+-            switch (id)
+-            {
+-                case 0:
+-                    RootExpression.Condition = Condition.AND;
+-                    break;
+-                case 1:
+-                    RootExpression.Condition = Condition.OR;
+-                    break;
+-            }
+-        }
+-
+-        public void RemoveRule(Rule<T> rule)
+-        {
+-            RootExpression.Rules.Remove(rule);
+-            StateHasChanged();
+-        }
+-        #endregion
+-
+     }
+ }

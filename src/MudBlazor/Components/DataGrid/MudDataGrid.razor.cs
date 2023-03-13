@@ -471,6 +471,11 @@ namespace MudBlazor
         [Parameter] public RenderFragment PagerContent { get; set; }
 
         /// <summary>
+        /// Defines the MudTablePager position 
+        /// </summary>
+        [Parameter] public PagerPosition PagerPosition { get; set; } = PagerPosition.Bottom;
+
+        /// <summary>
         /// Supply an async function which (re)loads filtered, paginated and sorted data from server.
         /// Table will await this func and update based on the returned TableData.
         /// Used only with ServerData
@@ -776,14 +781,7 @@ namespace MudBlazor
             Loading = true;
             StateHasChanged();
 
-            var state = new GridState<T>
-            {
-                Page = CurrentPage,
-                PageSize = RowsPerPage,
-                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
-                // Additional ToList() here to decouple clients from internal list avoiding runtime issues
-                FilterDefinitions = FilterDefinitions.ToList()
-            };
+            var state = GetDataGridState();
 
             _server_data = await ServerData(state);
 
@@ -1344,5 +1342,56 @@ namespace MudBlazor
         }
 
         #endregion
+
+        #region COMPLEX
+        public Rule<T> RootExpression { get; set; } = new(null, null) { Condition = Condition.AND };
+
+        protected void AddRootExpressionRule()
+        {
+            RootExpression.Rules.Add(new Rule<T>(null, null));
+        }
+
+        private void SetRootButtonText(int id)
+        {
+            switch (id)
+            {
+                case 0:
+                    RootExpression.Condition = Condition.AND;
+                    break;
+                case 1:
+                    RootExpression.Condition = Condition.OR;
+                    break;
+            }
+        }
+
+        public void RemoveRule(Rule<T> rule)
+        {
+            RootExpression.Rules.Remove(rule);
+            StateHasChanged();
+        }
+        #endregion
+
+        public GridState<T> GetDataGridState()
+        {
+            var state = new GridState<T>()
+            {
+                Page = CurrentPage,
+                PageSize = RowsPerPage,
+                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
+                RootExpression = RootExpression.DeepClone()
+            };
+
+            foreach (var fd in FilterDefinitions)
+            {
+                var x = fd.GenerateFilterExpression();
+                Console.WriteLine(x.ToString());
+            }
+
+            // deep copy
+            return state;
+        }
+
+
+
     }
 }

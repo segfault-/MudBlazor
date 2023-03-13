@@ -14,7 +14,7 @@
             <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="@Field" FullWidth="true" Required="true" Dense="true">
                 @foreach (var column in Root?.RenderedColumns)
                 {
-                    <MudSelectItem Value="@column.Field">@column.computedTitle</MudSelectItem>
+                    <MudSelectItem Value="@column.Value">@column.Title</MudSelectItem>
                 }
             </MudSelect>
         </MudPaper>
