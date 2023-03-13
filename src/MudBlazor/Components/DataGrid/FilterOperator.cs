@@ -22,9 +22,6 @@ namespace MudBlazor
             public const string EndsWith = "ends with";
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
-            public const string IsOneOf = "is one of";
-            public const string IsNotOneOf = "is not one of";
-            internal static readonly string[] Values = GetFields(typeof(String));
         }
 
         public static class Number
@@ -37,24 +34,17 @@ namespace MudBlazor
             public const string LessThanOrEqual = "<=";
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
-
-            internal static readonly string[] Values = GetFields(typeof(Number));
         }
 
         public static class Enum
         {
             public const string Is = "is";
             public const string IsNot = "is not";
-            public const string IsOneOf = "is one of";
-            public const string IsNotOneOf = "is not one of";
-            internal static readonly string[] Values = GetFields(typeof(Enum));
         }
 
         public static class Boolean
         {
             public const string Is = "is";
-
-            internal static readonly string[] Values = GetFields(typeof(Boolean));
         }
 
         public static class DateTime
@@ -67,67 +57,86 @@ namespace MudBlazor
             public const string OnOrBefore = "is on or before";
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
-
-            internal static readonly string[] Values = GetFields(typeof(DateTime));
         }
 
         public static class Guid
         {
             public const string Equal = "equals";
             public const string NotEqual = "not equals";
-
-            internal static string[] Values = GetFields(typeof(Guid));
         }
 
         internal static string[] GetOperatorByDataType(Type type)
         {
-            if (type != null)
+            if (type == typeof(string))
             {
-                type = Nullable.GetUnderlyingType(type) ?? type;
-            }
-
-            if (type == typeof(string) || type == typeof(Guid))
-            {
-                return String.Values;
+                return new []
+                {
+                    String.Contains,
+                    String.NotContains,
+                    String.Equal,
+                    String.NotEqual,
+                    String.StartsWith,
+                    String.EndsWith,
+                    String.Empty,
+                    String.NotEmpty,
+                };
             }
             if (IsNumber(type))
             {
-                return Number.Values;
+                return new[]
+                {
+                    Number.Equal,
+                    Number.NotEqual,
+                    Number.GreaterThan,
+                    Number.GreaterThanOrEqual,
+                    Number.LessThan,
+                    Number.LessThanOrEqual,
+                    Number.Empty,
+                    Number.NotEmpty,
+                };
             }
             if (IsEnum(type))
             {
-                return Enum.Values;
+                return new[] {
+                    Enum.Is,
+                    Enum.IsNot,
+                };
             }
             if (type == typeof(bool))
             {
-                return Boolean.Values;
+                return new[]
+                {
+                    Boolean.Is,
+                };
             }
             if (type == typeof(System.DateTime))
             {
-                return DateTime.Values;
+                return new[]
+                {
+                    DateTime.Is,
+                    DateTime.IsNot,
+                    DateTime.After,
+                    DateTime.OnOrAfter,
+                    DateTime.Before,
+                    DateTime.OnOrBefore,
+                    DateTime.Empty,
+                    DateTime.NotEmpty,
+                };
             }
             if (type == typeof(System.Guid))
             {
-                return Guid.Values;
+                return new[]
+                {
+                    Guid.Equal,
+                    Guid.NotEqual,
+                };
             }
 
             // default
             return new string[] { };
         }
 
-        internal static string[] GetFields([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
-        {
-            var fields = new List<string>();
-
-            foreach (var field in type.GetFields().Where(fi => fi.IsLiteral))
-            {
-                fields.Add((string)field.GetValue(null));
-            }
-
-            return fields.ToArray();
-        }
-
-        internal static readonly HashSet<Type> NumericTypes = new()
+        internal static readonly HashSet<Type> NumericTypes = new HashSet<Type>
         {
             typeof(int),
             typeof(double),
@@ -155,42 +164,33 @@ namespace MudBlazor
             typeof(BigInteger?),
         };
 
-        internal static bool IsNumber([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
+        internal static bool IsNumber(Type type)
         {
             return NumericTypes.Contains(type);
         }
 
-        internal static bool IsString(Type type)
-        {
-            if (type == typeof(string))
-                return true;
-
-            var u = Nullable.GetUnderlyingType(type);
-            return (u != null) && u == typeof(string);
-        }
-
         internal static bool IsEnum(Type type)
         {
-            if (type == null)
+            if (null == type)
                 return false;
 
             if (type.IsEnum)
                 return true;
 
-            var u = Nullable.GetUnderlyingType(type);
+            Type u = Nullable.GetUnderlyingType(type);
             return (u != null) && u.IsEnum;
         }
 
-        internal static bool IsDateTime([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
+        internal static bool IsDateTime(Type type)
         {
             if (type == typeof(System.DateTime))
                 return true;
 
-            var u = Nullable.GetUnderlyingType(type);
+            Type u = Nullable.GetUnderlyingType(type);
             return (u != null) && u == typeof(System.DateTime);
         }
 
-        internal static bool IsBoolean([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
+        internal static bool IsBoolean(Type type)
         {
             if (type == typeof(bool))
                 return true;

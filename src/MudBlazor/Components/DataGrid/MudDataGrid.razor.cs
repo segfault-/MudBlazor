@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -18,7 +17,7 @@ using MudBlazor.Utilities;
 
 namespace MudBlazor
 {
-    [RequiresUnreferencedCode(CodeMessage.SerializationUnreferencedCodeMessage)]
+    [CascadingTypeParameter(nameof(T))]
     public partial class MudDataGrid<T> : MudComponentBase
     {
         private int _currentPage = 0;
@@ -32,9 +31,6 @@ namespace MudBlazor
         private List<GroupDefinition<T>> _groups = new List<GroupDefinition<T>>();
         internal HashSet<T> _openHierarchies = new HashSet<T>();
         private PropertyInfo[] _properties = typeof(T).GetProperties();
-        private MudForm _form;
-        bool success;
-        string[] errors = { };
 
         protected string _classname =>
             new CssBuilder("mud-table")
@@ -279,7 +275,7 @@ namespace MudBlazor
 
         [Parameter] public DataGridFilterCaseSensitivity FilterCaseSensitivity { get; set; }
 
-        [Parameter] public RenderFragment<List<FilterDefinition<T>>> FilterTemplate { get; set; }
+        [Parameter] public RenderFragment<MudDataGrid<T>> FilterTemplate { get; set; }
 
         /// <summary>
         /// The list of FilterDefinitions that have been added to the data grid. FilterDefinitions are managed by the data
@@ -475,11 +471,6 @@ namespace MudBlazor
         [Parameter] public RenderFragment PagerContent { get; set; }
 
         /// <summary>
-        /// Defines the MudTablePager position 
-        /// </summary>
-        [Parameter] public PagerPosition PagerPosition { get; set; } = PagerPosition.Bottom;
-
-        /// <summary>
         /// Supply an async function which (re)loads filtered, paginated and sorted data from server.
         /// Table will await this func and update based on the returned TableData.
         /// Used only with ServerData
@@ -530,35 +521,35 @@ namespace MudBlazor
         /// If MultiSelection is true, this returns the currently selected items. You can bind this property and the initial content of the HashSet you bind it to will cause these rows to be selected initially.
         /// </summary>
         [Parameter]
-        public HashSet<T> SelectedItems { get; set; } = new HashSet<T>();
-        //{
-        //    get
-        //    {
-        //        if (!MultiSelection)
-        //            if (_selectedItem is null)
-        //                return new HashSet<T>(Array.Empty<T>());
-        //            else
-        //                return new HashSet<T>(new T[] { _selectedItem });
-        //        else
-        //            return Selection;
-        //    }
-        //    set
-        //    {
-        //        if (value == Selection)
-        //            return;
-        //        if (value == null)
-        //        {
-        //            if (Selection.Count == 0)
-        //                return;
-        //            Selection = new HashSet<T>();
-        //        }
-        //        else
-        //            Selection = value;
-        //        SelectedItemsChangedEvent?.Invoke(Selection);
-        //        SelectedItemsChanged.InvokeAsync(Selection);
-        //        InvokeAsync(StateHasChanged);
-        //    }
-        //}
+        public HashSet<T> SelectedItems
+        {
+            get
+            {
+                if (!MultiSelection)
+                    if (_selectedItem is null)
+                        return new HashSet<T>(Array.Empty<T>());
+                    else
+                        return new HashSet<T>(new T[] { _selectedItem });
+                else
+                    return Selection;
+            }
+            set
+            {
+                if (value == Selection)
+                    return;
+                if (value == null)
+                {
+                    if (Selection.Count == 0)
+                        return;
+                    Selection = new HashSet<T>();
+                }
+                else
+                    Selection = value;
+                SelectedItemsChangedEvent?.Invoke(Selection);
+                SelectedItemsChanged.InvokeAsync(Selection);
+                InvokeAsync(StateHasChanged);
+            }
+        }
 
         /// <summary>
         /// Returns the item which was last clicked on in single selection mode (that is, if MultiSelection is false)
@@ -662,8 +653,10 @@ namespace MudBlazor
 
         public HashSet<T> Selection { get; set; } = new HashSet<T>();
         public bool HasPager { get; set; }
+        public IEnumerable<T> ServerItems => _server_data.Items;
         private GridData<T> _server_data = new GridData<T>() { TotalItems = 0, Items = Array.Empty<T>() };
 
+        // TODO: When adding one FilterDefinition, this is called once for each RenderedColumn...
         public IEnumerable<T> FilteredItems
         {
             get
@@ -783,7 +776,14 @@ namespace MudBlazor
             Loading = true;
             StateHasChanged();
 
-            var state = GetDataGridState();
+            var state = new GridState<T>
+            {
+                Page = CurrentPage,
+                PageSize = RowsPerPage,
+                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
+                // Additional ToList() here to decouple clients from internal list avoiding runtime issues
+                FilterDefinitions = FilterDefinitions.ToList()
+            };
 
             _server_data = await ServerData(state);
 
@@ -822,55 +822,36 @@ namespace MudBlazor
         /// <summary>
         /// Called by the DataGrid when the "Add Filter" button is pressed.
         /// </summary>
-        internal void AddFilter()
+        public void AddFilter()
         {
             var column = RenderedColumns.FirstOrDefault(x => x.filterable);
             FilterDefinitions.Add(new FilterDefinition<T>
             {
                 Id = Guid.NewGuid(),
                 DataGrid = this,
-                Field = column?.Field,
+                //Field = column?.PropertyName,
                 Title = column?.Title,
-                FieldType = column?.FieldType
+                //FieldType = column?.PropertyType,
+                PropertyExpression = column?.PropertyExpression,
             });
             _filtersMenuVisible = true;
             StateHasChanged();
         }
 
-        internal async Task ApplyFiltersAsync()
+        internal void ApplyFilters()
         {
-            await _form.Validate();
-            if (success)
-            {
-                _filtersMenuVisible = false;
-                InvokeServerLoadFunc().AndForget();
-            }
+            _filtersMenuVisible = false;
+            InvokeServerLoadFunc().AndForget();
         }
 
-        internal void ClearFilters()
+        public void ClearFilters()
         {
             FilterDefinitions.Clear();
-            RootExpression.Rules.Clear();
         }
 
-        internal void AddFilter(Guid id, Type fieldType, string field)
+        public void AddFilter(FilterDefinition<T> definition)
         {
-            var column = RenderedColumns.FirstOrDefault(x => x.Field == field && x.filterable);
-
-            RootExpression.Rules.Add(new Rule<T>(null, field)
-            {
-                Id = id
-            });
-
-
-            FilterDefinitions.Add(new FilterDefinition<T>
-            {
-                Id = id,
-                DataGrid = this,
-                Field = field,
-                Title = column?.Title,
-                FieldType = column?.FieldType,
-            });
+            FilterDefinitions.Add(definition);
             _filtersMenuVisible = true;
             StateHasChanged();
         }
@@ -895,8 +876,12 @@ namespace MudBlazor
 
         internal async Task SetSelectAllAsync(bool value)
         {
+            var items = ServerData != null
+                    ? ServerItems
+                    : Items;
+                    
             if (value)
-                Selection = new HashSet<T>(Items);
+                Selection = new HashSet<T>(items);
             else
                 Selection.Clear();
 
@@ -1236,7 +1221,7 @@ namespace MudBlazor
         }
 
         public void GroupItems()
-        {
+        {          
             if (GroupedColumn == null)
             {
                 _groups = new List<GroupDefinition<T>>();
@@ -1273,7 +1258,7 @@ namespace MudBlazor
         {
             foreach (var c in RenderedColumns)
             {
-                if (c.Field != column.Field)
+                if (c.PropertyName != column.PropertyName)
                     c.RemoveGrouping();
             }
 
@@ -1309,26 +1294,6 @@ namespace MudBlazor
 
             foreach (var group in _groups)
                 group.IsExpanded = false;
-        }
-
-        public GridState<T> GetDataGridState()
-        {
-            var state = new GridState<T>()
-            {
-                Page = CurrentPage,
-                PageSize = RowsPerPage,
-                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
-                RootExpression = RootExpression.DeepClone()
-            };
-
-            foreach (var fd in FilterDefinitions)
-            {
-                var x = fd.GenerateFilterExpression();
-                Console.WriteLine(x.ToString());
-            }
-
-            // deep copy
-            return state;
         }
 
         #endregion
@@ -1379,34 +1344,5 @@ namespace MudBlazor
         }
 
         #endregion
-
-        #region COMPLEX
-        public Rule<T> RootExpression { get; set; } = new(null, null) { Condition = Condition.AND };
-
-        protected void AddRootExpressionRule()
-        {
-            RootExpression.Rules.Add(new Rule<T>(null, null));
-        }
-
-        private void SetRootButtonText(int id)
-        {
-            switch (id)
-            {
-                case 0:
-                    RootExpression.Condition = Condition.AND;
-                    break;
-                case 1:
-                    RootExpression.Condition = Condition.OR;
-                    break;
-            }
-        }
-
-        public void RemoveRule(Rule<T> rule)
-        {
-            RootExpression.Rules.Remove(rule);
-            StateHasChanged();
-        }
-        #endregion
-
     }
 }
