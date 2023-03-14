@@ -176,7 +176,10 @@ namespace MudBlazor
                 if (DataGrid == null)
                     return false;
 
-                return DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
+                bool retVal = DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
+                retVal |= LinqRecursiveHelper.Traverse(DataGrid.RootExpression.Rules, rules => rules.Rules).Any(r => r.Field == Column.PropertyName && r.Operator != null);
+
+                return retVal;
             }
         }
 
@@ -325,7 +328,8 @@ namespace MudBlazor
 
         internal void AddFilter()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple && Column != null)
+
+            if ((DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex) && Column != null)
             {
                 DataGrid.AddFilter(Column.FilterContext.FilterDefinition.Clone());
             }
@@ -335,7 +339,7 @@ namespace MudBlazor
 
         internal void OpenFilters()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple)
+            if (DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex)
                 DataGrid.OpenFilters();
             else if (DataGrid.FilterMode == DataGridFilterMode.ColumnFilterMenu)
                 _filtersMenuVisible = true;

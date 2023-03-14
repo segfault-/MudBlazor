@@ -823,6 +823,7 @@ namespace MudBlazor
         public void AddFilter()
         {
             var column = RenderedColumns.FirstOrDefault(x => x.filterable);
+
             FilterDefinitions.Add(new FilterDefinition<T>
             {
                 Id = Guid.NewGuid(),
@@ -845,11 +846,13 @@ namespace MudBlazor
         public void ClearFilters()
         {
             FilterDefinitions.Clear();
+            RootExpression.Rules.Clear();
         }
 
         public void AddFilter(FilterDefinition<T> definition)
         {
             FilterDefinitions.Add(definition);
+            RootExpression.Rules.Add(new Rule<T>(null, definition.Title));
             _filtersMenuVisible = true;
             StateHasChanged();
         }
@@ -1391,7 +1394,11 @@ namespace MudBlazor
             return state;
         }
 
-
+        internal async Task ApplyFiltersAsync()
+        {
+            _filtersMenuVisible = false;
+            InvokeServerLoadFunc().AndForget();
+        }
 
     }
 }

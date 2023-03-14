@@ -22,6 +22,8 @@ namespace MudBlazor
             public const string EndsWith = "ends with";
             public const string Empty = "is empty";
             public const string NotEmpty = "is not empty";
+            public const string IsOneOf = "is one of";
+            public const string IsNotOneOf = "is not one of";
         }
 
         public static class Number
@@ -40,6 +42,8 @@ namespace MudBlazor
         {
             public const string Is = "is";
             public const string IsNot = "is not";
+            public const string IsOneOf = "is one of";
+            public const string IsNotOneOf = "is not one of";
         }
 
         public static class Boolean
@@ -79,6 +83,8 @@ namespace MudBlazor
                     String.EndsWith,
                     String.Empty,
                     String.NotEmpty,
+                    String.IsOneOf,
+                    String.IsNotOneOf
                 };
             }
             if (IsNumber(type))
@@ -100,6 +106,8 @@ namespace MudBlazor
                 return new[] {
                     Enum.Is,
                     Enum.IsNot,
+                    Enum.IsOneOf,
+                    Enum.IsNotOneOf
                 };
             }
             if (type == typeof(bool))
