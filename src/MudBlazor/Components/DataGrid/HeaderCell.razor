@@ -12,6 +12,7 @@ else if (Column != null && !Column.Hidden)
 {
     <th @ref=@_headerElement scope="col" class="@_classname" style="@_style" colspan="@Column.HeaderColSpan" @attributes="@UserAttributes">
         <span class="column-header">
+
             @if (sortable)
             {
                 <span class="@_sortHeaderClass" @onclick="SortChangedAsync">
@@ -19,11 +20,19 @@ else if (Column != null && !Column.Hidden)
                     {
                         @Column.HeaderTemplate(Column.headerContext)
                     }
-                    else 
+                    else if(string.IsNullOrWhiteSpace(computedTitle))
                     {
                         <MudText Typo="@Column.HeaderTypo">
                             @computedTitle
                         </MudText>
+                    }
+                    else
+                    {
+                        <MudDropZone T="Column<T>" Class="d-flex flex-row-reverse" Identifier="@Column.Ordinal.ToString()">
+                            <MudText Typo="@Column.HeaderTypo">
+                                @computedTitle
+                            </MudText>
+                        </MudDropZone>
                     }
                 </span>
             }

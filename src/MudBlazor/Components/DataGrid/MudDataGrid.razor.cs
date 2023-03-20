@@ -110,6 +110,33 @@ namespace MudBlazor
             }
         }
 
+        internal bool RenderedColumnsItemsSelector(Column<T> item, string dropZone)
+        {
+            if(item?.Ordinal == dropZone)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private void ItemUpdated(MudItemDropInfo<Column<T>> dropItem)
+        {
+            dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
+
+            var dragAndDropSource = RenderedColumns.Where(rc => rc.Ordinal == dropItem.Item.Ordinal.ToString()).SingleOrDefault();
+            var dragAndDropDestination = RenderedColumns.Where(rc => rc.Ordinal == dropItem.DropzoneIdentifier).SingleOrDefault();
+            if (dragAndDropSource != null && dragAndDropDestination != null)
+            {
+                var dragAndDropSourceIndex = RenderedColumns.IndexOf(dragAndDropSource);
+                var dragAndDropDestinationIndex = RenderedColumns.IndexOf(dragAndDropDestination);
+
+                RenderedColumns.Remove(dragAndDropSource);
+                RenderedColumns.Insert(dragAndDropDestinationIndex, dragAndDropSource);
+
+                StateHasChanged();
+            }
+        }
+
         public readonly List<Column<T>> RenderedColumns = new List<Column<T>>();
         internal T _editingItem;
 

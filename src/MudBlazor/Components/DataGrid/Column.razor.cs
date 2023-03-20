@@ -114,6 +114,8 @@ namespace MudBlazor
 
         [Parameter] public RenderFragment<FilterContext<T>> FilterTemplate { get; set; }
 
+        [Parameter] public string Ordinal { get; set; }
+
         private CultureInfo _culture;
         /// <summary>
         /// The culture used to represent this column and by the filtering input field.
