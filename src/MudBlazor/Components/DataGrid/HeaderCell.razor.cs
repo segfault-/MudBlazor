@@ -15,12 +15,12 @@ namespace MudBlazor
 {
     public partial class HeaderCell<T> : MudComponentBase, IDisposable
     {
+        private Guid _id = Guid.NewGuid();
         [CascadingParameter] public MudDataGrid<T> DataGrid { get; set; }
         [CascadingParameter(Name = "IsOnlyHeader")] public bool IsOnlyHeader { get; set; } = false;
 
         [Parameter] public Column<T> Column { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
-
         private SortDirection _initialDirection;
         private bool _isSelected;
 
@@ -185,6 +185,21 @@ namespace MudBlazor
 
         #endregion
 
+        protected override Task OnParametersSetAsync()
+        {
+            if (null != Column)
+            {
+
+                Column.HeaderCell = this;
+
+                if (Column.filterable)
+                {
+                    Column.FilterContext._headerCell = this;
+                }
+            }
+            return base.OnParametersSetAsync();
+        }
+
         protected override async Task OnInitializedAsync()
         {
             _initialDirection = Column?.InitialDirection ?? SortDirection.None;
@@ -204,6 +219,7 @@ namespace MudBlazor
 
             if (null != Column)
             {
+                
                 Column.HeaderCell = this;
 
                 if (Column.filterable)

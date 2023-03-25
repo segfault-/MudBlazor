@@ -112,8 +112,9 @@ namespace MudBlazor
 
         internal bool RenderedColumnsItemsSelector(Column<T> item, string dropZone)
         {
-            if(item?.Ordinal == dropZone)
+            if (item.PropertyName == dropZone)
             {
+                //Console.WriteLine($"{item.PropertyName} : {item.Identifier} : {dropZone}");
                 return true;
             }
             return false;
@@ -123,18 +124,28 @@ namespace MudBlazor
         {
             dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
 
-            var dragAndDropSource = RenderedColumns.Where(rc => rc.Ordinal == dropItem.Item.Ordinal.ToString()).SingleOrDefault();
-            var dragAndDropDestination = RenderedColumns.Where(rc => rc.Ordinal == dropItem.DropzoneIdentifier).SingleOrDefault();
+            var dragAndDropSource = RenderedColumns.Where(rc => rc.PropertyName == dropItem.Item.PropertyName).SingleOrDefault();
+            var dragAndDropDestination = RenderedColumns.Where(rc => rc.PropertyName == dropItem.DropzoneIdentifier).SingleOrDefault();
+            //Console.WriteLine($"source: {dragAndDropSource.PropertyName} destination : {dragAndDropDestination.PropertyName}");
             if (dragAndDropSource != null && dragAndDropDestination != null)
             {
                 var dragAndDropSourceIndex = RenderedColumns.IndexOf(dragAndDropSource);
                 var dragAndDropDestinationIndex = RenderedColumns.IndexOf(dragAndDropDestination);
+                //Console.WriteLine($"source index: {dragAndDropSourceIndex} destination index : {dragAndDropDestinationIndex}");
 
                 RenderedColumns.Remove(dragAndDropSource);
                 RenderedColumns.Insert(dragAndDropDestinationIndex, dragAndDropSource);
 
-                StateHasChanged();
+                //foreach (var rc in RenderedColumns)
+                //{
+                //    Console.Write(rc.PropertyName + " ");
+                //}
+                //Console.Write('\n');
+
+
+                //StateHasChanged();
             }
+            //Console.WriteLine("--> ItemUpdatedComplete");
         }
 
         public readonly List<Column<T>> RenderedColumns = new List<Column<T>>();

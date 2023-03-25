@@ -114,7 +114,6 @@ namespace MudBlazor
 
         [Parameter] public RenderFragment<FilterContext<T>> FilterTemplate { get; set; }
 
-        [Parameter] public string Ordinal { get; set; }
         public string Identifier { get; set; }
         
 
@@ -384,6 +383,24 @@ namespace MudBlazor
             DataGrid.ExternalStateHasChanged();
         }
 
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Column<T>);
+        }
+
+        public bool Equals(Column<T> obj)
+        {
+            var x = obj != null && obj.PropertyName == this.PropertyName;
+
+            if(!x)
+            {
+                Console.WriteLine($"{obj.PropertyName} : {this.PropertyName}");
+            }
+
+
+            
+            return x;
+        }
 
         #region Abstract Members
 

@@ -37,7 +37,7 @@
                 </div>
             }
             <div @ref=_gridElement class="@_tableClass" style="@_tableStyle">
-                <MudDropContainer T="Column<T>" Items="@RenderedColumns" ItemsSelector="(item, dropzone) => RenderedColumnsItemsSelector(item, dropzone)" ItemDropped="ItemUpdated">
+                <MudDropContainer T="Column<T>" Items="@RenderedColumns" ItemsSelector="(item, dropzone) => RenderedColumnsItemsSelector(item, dropzone)" ItemDropped="ItemUpdated" CanDropClass="mud-border-success" NoDropClass="mud-border-error">
                     <ChildContent>
                         <table class="mud-table-root">
                             @if (ColGroup != null)
@@ -50,11 +50,13 @@
                             <CascadingValue Name="IsOnlyHeader" IsFixed="true" Value="true">
                                 @Header
                             </CascadingValue>
-                            <tr class="mud-table-row">                          
+                            <tr class="mud-table-row">  
+
                                 @foreach (var column in RenderedColumns)
                                 {
                                     <HeaderCell SortDirection="@(GetColumnSortDirection(column.PropertyName))" T="T" Column="@column"></HeaderCell>
                                 }
+
                             </tr>
                         @if (_filtersMenuVisible && FilterMode == DataGridFilterMode.Simple)
                         {
@@ -254,13 +256,17 @@
                                     @{ var tmpRowIndex = rowIndex; }
                                     <tr class="mud-table-row @rowClass" Style="@rowStyle" @key="item" @onclick="@((args) => OnRowClickedAsync(args, item, tmpRowIndex))">
                                         <CascadingValue Value="@Validator" IsFixed="true">
+
                                             @foreach (var column in RenderedColumns)
                                             {
+
+
                                                 if (!column.Hidden)
                                                 {
                                                     @Cell(column, item)
                                                 }
                                             }
+
                                         </CascadingValue>
                                     </tr>
                                     @if (ChildRowContent != null && (_openHierarchies.Contains(item) || !hasHierarchyColumn))
@@ -301,7 +307,7 @@
                 </table>                
                     </ChildContent>
                     <ItemRenderer>
-                        <MudIconButton Icon="@Icons.Material.Filled.DragIndicator" Size="@Size.Small"></MudIconButton>
+                        @context.HeaderCell.TableHeader()
                     </ItemRenderer>
                 </MudDropContainer>
             </div>

@@ -12,8 +12,6 @@ using System.Numerics;
 using System.Reflection;
 using System.Text.Json;
 using MudBlazor.Utilities;
-using static MudBlazor.CategoryTypes;
-using static MudBlazor.Colors;
 
 namespace MudBlazor
 {

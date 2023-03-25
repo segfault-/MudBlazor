@@ -143,7 +143,8 @@ namespace MudBlazor
                 predicate = ItemsSelector;
             }
 
-            return (Container?.Items ?? Array.Empty<T>()).Where(predicate).OrderBy(x => GetItemIndex(x)).ToArray();
+            var x =  (Container?.Items ?? Array.Empty<T>()).Where(predicate).OrderBy(x => GetItemIndex(x)).ToArray();
+            return x;
         }
 
         private RenderFragment<T> GetItemTemplate() => ItemRenderer ?? Container?.ItemRenderer;

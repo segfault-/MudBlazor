@@ -45,7 +45,18 @@ namespace MudBlazor
                         Title = _propertyName;
                     }
                 }
-                else
+                else if (Property.Body is UnaryExpression unaryExpression)
+                {
+                    MemberExpression me = unaryExpression.Operand as MemberExpression;
+
+                    _fullPropertyName = unaryExpression.Operand.Type.FullName;
+                    _propertyName = me.Member.Name;
+                    if(Title is null)
+                    {
+                        Title = _propertyName;
+                    }
+                }
+                else 
                 {
                     _propertyName = _fullPropertyName = Property.Body.ToString();
                 }
@@ -70,7 +81,24 @@ namespace MudBlazor
             => Property.Compile()(item);
 
         protected internal override Type PropertyType
-            => typeof(TProperty);
+        {
+            get
+            {
+                var ue = Property.Body as UnaryExpression;
+                var pe = Property.Body as MemberExpression;
+
+                if(ue != null)
+                {
+                    return ue.Operand.Type;
+                }
+                if(pe != null)
+                {
+                    return pe.GetType();
+                }
+                return null;
+            }
+        }
+//            => typeof(TProperty);
 
         protected internal override string? FullPropertyName
             => _fullPropertyName;

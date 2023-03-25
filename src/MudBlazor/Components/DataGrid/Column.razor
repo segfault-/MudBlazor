@@ -2,3 +2,14 @@
 @typeparam T
 @inherits MudComponentBase
 
+@code
+{
+    internal RenderFragment RenderHeader()
+    {
+        return
+        @<text>
+        <MudText>Column RenderFrag : @this.PropertyName</MudText>
+        
+        </text>;
+    }
+}
