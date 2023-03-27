@@ -126,26 +126,14 @@ namespace MudBlazor
 
             var dragAndDropSource = RenderedColumns.Where(rc => rc.PropertyName == dropItem.Item.PropertyName).SingleOrDefault();
             var dragAndDropDestination = RenderedColumns.Where(rc => rc.PropertyName == dropItem.DropzoneIdentifier).SingleOrDefault();
-            //Console.WriteLine($"source: {dragAndDropSource.PropertyName} destination : {dragAndDropDestination.PropertyName}");
             if (dragAndDropSource != null && dragAndDropDestination != null)
             {
                 var dragAndDropSourceIndex = RenderedColumns.IndexOf(dragAndDropSource);
                 var dragAndDropDestinationIndex = RenderedColumns.IndexOf(dragAndDropDestination);
-                //Console.WriteLine($"source index: {dragAndDropSourceIndex} destination index : {dragAndDropDestinationIndex}");
 
                 RenderedColumns.Remove(dragAndDropSource);
                 RenderedColumns.Insert(dragAndDropDestinationIndex, dragAndDropSource);
-
-                //foreach (var rc in RenderedColumns)
-                //{
-                //    Console.Write(rc.PropertyName + " ");
-                //}
-                //Console.Write('\n');
-
-
-                //StateHasChanged();
             }
-            //Console.WriteLine("--> ItemUpdatedComplete");
         }
 
         public readonly List<Column<T>> RenderedColumns = new List<Column<T>>();

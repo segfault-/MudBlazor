@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -21,6 +20,17 @@ namespace MudBlazor
 
         [Parameter] public Column<T> Column { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public double? InitialWidth
+        {
+            get => _width;
+            set
+            {
+                _width = value;
+            }
+        }
+
+
+
         private SortDirection _initialDirection;
         private bool _isSelected;
 
@@ -185,19 +195,20 @@ namespace MudBlazor
 
         #endregion
 
-        protected override Task OnParametersSetAsync()
+        protected override async Task OnParametersSetAsync()
         {
             if (null != Column)
             {
 
                 Column.HeaderCell = this;
-
+                
                 if (Column.filterable)
                 {
                     Column.FilterContext._headerCell = this;
                 }
+
             }
-            return base.OnParametersSetAsync();
+            await base.OnParametersSetAsync();
         }
 
         protected override async Task OnInitializedAsync()

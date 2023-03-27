@@ -27,6 +27,7 @@ namespace MudBlazor
         [Parameter] public T Value { get; set; }
         [Parameter] public EventCallback<T> ValueChanged { get; set; }
         [Parameter] public Typo HeaderTypo { get; set; }
+        [Parameter] public double? InitialWidth { get; set; }
         //[Parameter] public bool Visible { get; set; } = true;
 
         /// <summary>
