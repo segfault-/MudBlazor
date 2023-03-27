@@ -42,7 +42,7 @@ namespace MudBlazor
             _resizeMode = columnResizeMode;
             _currentX = clientX;
 
-            _startWidth = await headerCell.GetCurrentCellWidth();
+            _startWidth = await headerCell.GetCurrentCellWidthAsync();
             _startColumn = headerCell.Column;
 
             if (_resizeMode == ResizeMode.Column)
@@ -54,7 +54,7 @@ namespace MudBlazor
                     if (nextResizableColumn == null)
                         return false;
 
-                    _nextStartWidth = await nextResizableColumn.HeaderCell.GetCurrentCellWidth();
+                    _nextStartWidth = await nextResizableColumn.HeaderCell.GetCurrentCellWidthAsync();
                     _nextColumn = nextResizableColumn;
                 }
             }
@@ -116,7 +116,7 @@ namespace MudBlazor
                 {
                     if (_startColumn is not null)
                     {
-                        await _startColumn.HeaderCell.UpdateColumnWidth(targetWidth, gridHeight, finish);
+                        await _startColumn.HeaderCell.UpdateColumnWidthAsync(targetWidth, gridHeight, finish);
                     }
 
                     return;
@@ -150,12 +150,12 @@ namespace MudBlazor
         private static async Task ResizeColumns(Column<T> columnToShrink, Column<T> columnToEnlarge,
             double shrinkedWidth, double enlargedWidth, double gridHeight, bool finish)
         {
-            var actualWidth = await columnToShrink.HeaderCell.UpdateColumnWidth(shrinkedWidth, gridHeight, finish);
+            var actualWidth = await columnToShrink.HeaderCell.UpdateColumnWidthAsync(shrinkedWidth, gridHeight, finish);
             // Use actualWidth to see if the column could be made smaller or if it reached its min size.
             if (actualWidth >= shrinkedWidth)
                 enlargedWidth -= (actualWidth - shrinkedWidth);
 
-            await columnToEnlarge.HeaderCell.UpdateColumnWidth(enlargedWidth, gridHeight, finish);
+            await columnToEnlarge.HeaderCell.UpdateColumnWidthAsync(enlargedWidth, gridHeight, finish);
         }
     }
 }

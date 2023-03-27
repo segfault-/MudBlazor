@@ -17,7 +17,7 @@ namespace MudBlazor
 
         [JsonPropertyName("SortDefinitions")] public ICollection<SortDefinition<T>> SortDefinitions { get; set; } = new List<SortDefinition<T>>();
 
-        [JsonPropertyName("RootExpression")] public Rule<T> RootExpression { get; set; } = new List<FilterDefinition<T>>();
+        [JsonPropertyName("RootExpression")] public Rule<T> RootExpression { get; set; } = new Rule<T>();
     }
 
     public class GridData<T>

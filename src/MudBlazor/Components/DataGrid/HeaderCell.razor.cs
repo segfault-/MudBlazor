@@ -18,7 +18,7 @@ namespace MudBlazor
         [CascadingParameter] public MudDataGrid<T> DataGrid { get; set; }
         [CascadingParameter(Name = "IsOnlyHeader")] public bool IsOnlyHeader { get; set; } = false;
 
-        [Parameter] public Column<T> Column { get; set; }
+        [CascadingParameter] public Column<T> Column { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public double? InitialWidth
         {
@@ -83,7 +83,15 @@ namespace MudBlazor
 
         private ElementReference _headerElement;
 
-        private double? _width;
+        private double? __width;
+        private double? _width
+        {
+            get => __width;
+            set
+            {
+                __width = value;
+            }
+        }
         private double? _resizerHeight;
         private bool _isResizing;
         private bool _filtersMenuVisible;
@@ -197,14 +205,13 @@ namespace MudBlazor
 
         protected override async Task OnParametersSetAsync()
         {
-            if (null != Column)
+            if (Column != null)
             {
-
                 Column.HeaderCell = this;
-                
+
                 if (Column.filterable)
                 {
-                    Column.FilterContext._headerCell = this;
+                    Column.FilterContext.HeaderCell = this;
                 }
 
             }
@@ -227,17 +234,17 @@ namespace MudBlazor
                 DataGrid.SelectedAllItemsChangedEvent += OnSelectedAllItemsChanged;
                 DataGrid.SelectedItemsChangedEvent += OnSelectedItemsChanged;
             }
+            // FU
+            //if (Column != null)
+            //{
+            //    Column.HeaderCell = this;
 
-            if (null != Column)
-            {
-                
-                Column.HeaderCell = this;
+            //    if (Column.filterable)
+            //    {
+            //        Column.FilterContext.HeaderCell = this;
+            //    }
 
-                if (Column.filterable)
-                {
-                    Column.FilterContext.HeaderCell = this;
-                }
-            }
+            //}
         }
 
         #region Events
@@ -301,7 +308,7 @@ namespace MudBlazor
                 _resizerHeight = null;
         }
 
-        internal async Task<double> UpdateColumnWidth(double targetWidth, double gridHeight, bool finishResize)
+        internal async Task<double> UpdateColumnWidthAsync(double targetWidth, double gridHeight, bool finishResize)
         {
             if (targetWidth > 0)
             {
@@ -316,10 +323,10 @@ namespace MudBlazor
                 await InvokeAsync(StateHasChanged);
             }
 
-            return await GetCurrentCellWidth();
+            return await GetCurrentCellWidthAsync();
         }
 
-        internal async Task<double> GetCurrentCellWidth()
+        internal async Task<double> GetCurrentCellWidthAsync()
         {
             var boundingRect = await _headerElement.MudGetBoundingClientRectAsync();
             return boundingRect.Width;

@@ -399,21 +399,21 @@ namespace MudBlazor
         {
             get
             {
-                return FilterOperator.IsString(typeof(T).GetProperty(Leaf.Value.Field).PropertyType);
+                return TypeIdentifier.IsString(typeof(T).GetProperty(Leaf.Value.Field).PropertyType);
             }
         }
         private bool IsNumber
         {
             get
             {
-                return FilterOperator.IsNumber(typeof(T).GetProperty(Leaf.Value.Field).PropertyType);
+                return TypeIdentifier.IsNumber(typeof(T).GetProperty(Leaf.Value.Field).PropertyType);
             }
         }
         private bool IsEnum
         {
             get
             {
-                return FilterOperator.IsEnum(typeof(T).GetProperty(Leaf.Value.Field).PropertyType);
+                return TypeIdentifier.IsEnum(typeof(T).GetProperty(Leaf.Value.Field).PropertyType);
             }
         }
 

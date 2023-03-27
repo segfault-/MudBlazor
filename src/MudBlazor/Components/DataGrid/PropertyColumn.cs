@@ -43,26 +43,19 @@ namespace MudBlazor
                 _fullPropertyName = Property.Body.ToString();
                 _propertyName = memberExpression.Member.Name;
 
-                    if (Title is null)
-                    {
-                        Title = _propertyName;
-                    }
-                }
-                else if (Property.Body is UnaryExpression unaryExpression)
-                {
-                    MemberExpression me = unaryExpression.Operand as MemberExpression;
+                Title ??= _propertyName;
+            }
+            else if (Property.Body is UnaryExpression unaryExpression)
+            {
+                MemberExpression me = unaryExpression.Operand as MemberExpression;
 
-                    _fullPropertyName = unaryExpression.Operand.Type.FullName;
-                    _propertyName = me.Member.Name;
-                    if(Title is null)
-                    {
-                        Title = _propertyName;
-                    }
-                }
-                else 
-                {
-                    _propertyName = _fullPropertyName = Property.Body.ToString();
-                }
+                _fullPropertyName = unaryExpression.Operand.Type.FullName;
+                _propertyName = me.Member.Name;
+                Title ??= _propertyName;
+            }
+            else
+            {
+                _propertyName = _fullPropertyName = Property.Body.ToString();
             }
 
             CompileGroupBy();
@@ -99,18 +92,17 @@ namespace MudBlazor
                 var ue = Property.Body as UnaryExpression;
                 var pe = Property.Body as MemberExpression;
 
-                if(ue != null)
+                if (ue != null)
                 {
                     return ue.Operand.Type;
                 }
-                if(pe != null)
+                if (pe != null)
                 {
                     return pe.GetType();
                 }
-                return null;
+                throw new ArgumentException(nameof(Property));
             }
         }
-//            => typeof(TProperty);
 
         protected internal override string? FullPropertyName
             => _fullPropertyName;

@@ -21,8 +21,6 @@ namespace MudBlazor
 
         [CascadingParameter] public MudDataGrid<T> DataGrid { get; set; }
 
-        //[CascadingParameter(Name = "HeaderCell")] public HeaderCell<T> HeaderCell { get; set; }
-
         [Parameter] public T Value { get; set; }
         [Parameter] public EventCallback<T> ValueChanged { get; set; }
         [Parameter] public Typo HeaderTypo { get; set; }
@@ -39,6 +37,7 @@ namespace MudBlazor
         [Parameter] public bool HideSmall { get; set; }
         [Parameter] public int FooterColSpan { get; set; } = 1;
         [Parameter] public int HeaderColSpan { get; set; } = 1;
+        
         [Parameter] public RenderFragment<HeaderContext<T>> HeaderTemplate { get; set; }
         [Parameter] public RenderFragment<CellContext<T>> CellTemplate { get; set; }
         [Parameter] public RenderFragment<FooterContext<T>> FooterTemplate { get; set; }
@@ -391,14 +390,6 @@ namespace MudBlazor
         public bool Equals(Column<T> obj)
         {
             var x = obj != null && obj.PropertyName == this.PropertyName;
-
-            if(!x)
-            {
-                Console.WriteLine($"{obj.PropertyName} : {this.PropertyName}");
-            }
-
-
-            
             return x;
         }
 

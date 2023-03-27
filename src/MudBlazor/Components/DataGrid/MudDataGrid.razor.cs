@@ -114,13 +114,12 @@ namespace MudBlazor
         {
             if (item.PropertyName == dropZone)
             {
-                //Console.WriteLine($"{item.PropertyName} : {item.Identifier} : {dropZone}");
                 return true;
             }
             return false;
         }
 
-        private void ItemUpdated(MudItemDropInfo<Column<T>> dropItem)
+        private async Task ItemUpdatedAsync(MudItemDropInfo<Column<T>> dropItem)
         {
             dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
 
@@ -133,7 +132,18 @@ namespace MudBlazor
 
                 RenderedColumns.Remove(dragAndDropSource);
                 RenderedColumns.Insert(dragAndDropDestinationIndex, dragAndDropSource);
+
+                var gridHeight = await GetActualHeight();
+                double dragAndDropSourceWidth = await dragAndDropSource.HeaderCell.GetCurrentCellWidthAsync();
+                double dragAndDropDestinationWidth = await dragAndDropDestination.HeaderCell.GetCurrentCellWidthAsync();
+
+                await dragAndDropSource.HeaderCell.UpdateColumnWidthAsync(dragAndDropDestinationWidth, gridHeight, true);
+                await dragAndDropDestination.HeaderCell.UpdateColumnWidthAsync(dragAndDropSourceWidth, gridHeight, true);
+
+                StateHasChanged();
             }
+
+            
         }
 
         public readonly List<Column<T>> RenderedColumns = new List<Column<T>>();
