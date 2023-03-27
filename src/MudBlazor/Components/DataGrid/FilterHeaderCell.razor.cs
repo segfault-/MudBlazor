@@ -78,14 +78,14 @@ namespace MudBlazor
         {
             get
             {
-                return FilterOperator.IsNumber(dataType);
+                return TypeIdentifier.IsNumber(dataType);
             }
         }
         private bool isEnum
         {
             get
             {
-                return FilterOperator.IsEnum(dataType);
+                return TypeIdentifier.IsEnum(dataType);
             }
         }
 

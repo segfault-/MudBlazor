@@ -3,13 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Numerics;
 
 namespace MudBlazor
 {
+#nullable enable
     public static class FilterOperator
     {
         public static class String
@@ -71,9 +68,11 @@ namespace MudBlazor
 
         internal static string[] GetOperatorByDataType(Type type)
         {
-            if (type == typeof(string))
+            var fieldType = FieldType.Identify(type);
+
+            if (fieldType.IsString)
             {
-                return new []
+                return new[]
                 {
                     String.Contains,
                     String.NotContains,
@@ -87,7 +86,7 @@ namespace MudBlazor
                     String.IsNotOneOf
                 };
             }
-            if (IsNumber(type))
+            if (fieldType.IsNumber)
             {
                 return new[]
                 {
@@ -101,7 +100,7 @@ namespace MudBlazor
                     Number.NotEmpty,
                 };
             }
-            if (IsEnum(type))
+            if (fieldType.IsEnum)
             {
                 return new[] {
                     Enum.Is,
@@ -110,14 +109,14 @@ namespace MudBlazor
                     Enum.IsNotOneOf
                 };
             }
-            if (type == typeof(bool))
+            if (fieldType.IsBoolean)
             {
                 return new[]
                 {
                     Boolean.Is,
                 };
             }
-            if (type == typeof(System.DateTime))
+            if (fieldType.IsDateTime)
             {
                 return new[]
                 {
@@ -131,7 +130,7 @@ namespace MudBlazor
                     DateTime.NotEmpty,
                 };
             }
-            if (type == typeof(System.Guid))
+            if (fieldType.IsGuid)
             {
                 return new[]
                 {

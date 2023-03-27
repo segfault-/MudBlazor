@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace MudBlazor
 {
+#nullable enable
     public sealed record SortDefinition<T>(
         [property: JsonPropertyName("SortBy")] string SortBy,
         [property: JsonPropertyName("Descending")] bool Descending,
