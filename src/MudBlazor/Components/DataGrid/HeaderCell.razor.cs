@@ -25,7 +25,10 @@ namespace MudBlazor
             get => _width;
             set
             {
-                _width = value;
+                if (_width != null) 
+                {
+                    _width = value;
+                }
             }
         }
 
@@ -84,7 +87,7 @@ namespace MudBlazor
         private ElementReference _headerElement;
 
         private double? __width;
-        private double? _width
+        internal double? _width
         {
             get => __width;
             set
@@ -92,6 +95,12 @@ namespace MudBlazor
                 __width = value;
             }
         }
+
+        public double? Width
+        {
+            get => _width;
+        }
+
         private double? _resizerHeight;
         private bool _isResizing;
         private bool _filtersMenuVisible;
@@ -161,9 +170,6 @@ namespace MudBlazor
         {
             get
             {
-                if (!sortable && !filterable && !groupable)
-                    return false;
-
                 return Column?.ShowColumnOptions ?? DataGrid?.ShowColumnOptions ?? true;
             }
         }
@@ -195,7 +201,7 @@ namespace MudBlazor
                     return false;
 
                 bool retVal = DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
-                retVal |= LinqRecursiveHelper.Traverse(DataGrid.RootExpression.Rules, rules => rules.Rules).Any(r => r.Field == Column.PropertyName && r.Operator != null);
+                retVal |= LinqRecursiveHelper.Traverse(DataGrid.RootExpression.Rules, rules => rules.Rules).Any(r => r.FilterDefinition.Title == Column.Title && r.FilterDefinition.Operator != null);
 
                 return retVal;
             }
@@ -348,6 +354,8 @@ namespace MudBlazor
                 _ => SortDirection.Ascending
             };
 
+            DataGrid.DropContainerHasChanged();
+
             if (args.CtrlKey && DataGrid.SortMode == SortMode.Multiple)
                 await InvokeAsync(() => DataGrid.ExtendSortAsync(Column.PropertyName, _initialDirection, Column.GetLocalSortFunc()));
             else
@@ -358,6 +366,7 @@ namespace MudBlazor
         {
             await InvokeAsync(() => DataGrid.RemoveSortAsync(Column.PropertyName));
             MarkAsUnsorted();
+            DataGrid.DropContainerHasChanged();
         }
 
         internal void AddFilter()

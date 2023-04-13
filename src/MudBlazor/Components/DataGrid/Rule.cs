@@ -19,29 +19,38 @@ namespace MudBlazor
             Rules = new();
         }
 
-        public Rule(Rule<T> parent, string field)
-            : this()
+        //public Rule(Rule<T> parent, string field)
+        //    : this()
+        //{
+        //    Parent = parent;
+        //    Field = field;
+        //}
+
+        public Rule(Rule<T> parent, FilterDefinition<T> filterDefinition)
         {
             Parent = parent;
-            Field = field;
+            FilterDefinition = filterDefinition;
         }
 
         public Rule<T> DeepClone()
         {
-            return new Rule<T>()
+            var rule = new Rule<T>()
             {
                 Id = this.Id,
                 Disabled = this.Disabled,
-                Label = this.Label,
-                Field = this.Field,
-                Operator = this.Operator,
+                Label = this.FilterDefinition?.Title,
+                Field = this.FilterDefinition?.Column?.PropertyName,
+                Operator = this.FilterDefinition?.Operator,
                 Value = this.Value,
                 Condition = this.Condition,
+                FilterDefinition = this.FilterDefinition,
 
-                Parent = this.Parent?.DeepClone(),
+                //Parent = this.Parent?.DeepClone(),
 
                 Rules = new List<Rule<T>>(this.Rules.Select(r => r.DeepClone()).ToList()),
             };
+
+            return rule;
         }
 
         public bool HasChild => Rules != null && Rules.Count > 0;
@@ -68,5 +77,8 @@ namespace MudBlazor
         public Rule<T> Parent { get; set; }
         [JsonPropertyName("rules")]
         public List<Rule<T>> Rules { get; set; }
+
+        [JsonIgnore]
+        public FilterDefinition<T> FilterDefinition { get; set; }
     }
 }

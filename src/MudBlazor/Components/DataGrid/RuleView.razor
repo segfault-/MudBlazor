@@ -11,44 +11,47 @@
     @if (!HasChildren)
     {
         <MudPaper Class="flex-initial" Width="25%" Elevation="0">
-            <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="@Field" FullWidth="true" Required="true" Dense="true">
-                @foreach (var column in Root?.RenderedColumns)
+            <MudSelect T="Column<T>" Disabled="Leaf.Disabled" @bind-Value="@Column" FullWidth="true" Required="true" Dense="true">
+                @foreach (var column in Root?.RenderedColumns ?? Enumerable.Empty<Column<T>>())
                 {
-                    <MudSelectItem T="string" Value="@column.Title">@column.Title</MudSelectItem>
+                    if(column.Filterable != null && (bool)column.Filterable)
+                    {
+                        <MudSelectItem T="Column<T>" Value="@column">@column.Title</MudSelectItem>
+                    }
                 }
             </MudSelect>
         </MudPaper>
 
-        @if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty))
+        @if (Column != null)
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
-                <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="Operator" FullWidth="true" Required="true" Dense="true">
-                    @foreach (var o in FilterOperator.GetOperatorByDataType(typeof(T).GetProperty(Leaf.Value.Field).PropertyType))
+                <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="@Operator" FullWidth="true" Required="true" Dense="true">
+                    @foreach (var o in FilterOperator.GetOperatorByDataType(Leaf.Value.FilterDefinition.dataType))
                     {
                         <MudSelectItem Value="@o">@o</MudSelectItem>
                     }
                 </MudSelect>
             </MudPaper>
         }
-        @if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) && typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(string) && !(Leaf.Value.Operator ?? string.Empty).EndsWith("empty"))
+        @if (TypeIdentifier.IsString(Leaf.Value.FilterDefinition.dataType) && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudTextField Class="flex-shrink-1" T="string" Value="@_valueString" ValueChanged="@StringValueChanged" Required="true" />
             </MudPaper>
         }
-        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) && IsNumber && !(Leaf.Value.Operator ?? string.Empty).EndsWith("empty"))
+        else if (TypeIdentifier.IsNumber(Leaf.Value.FilterDefinition.dataType) && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudNumericField Class="flex-shrink-1" T="double?" Value="@_valueNumber" ValueChanged="@NumberValueChanged" Required="true" />
             </MudPaper>
         }
-        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) && IsEnum)
+        else if (TypeIdentifier.IsEnum(Leaf.Value.FilterDefinition.dataType))
         {
-            @if (_isMultSelect)
+            @if ((Leaf.Value.FilterDefinition.Operator ?? "").Equals("is one of") || (Leaf.Value.FilterDefinition.Operator ?? "").Equals("is not one of"))
             {
                 <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                     <MudSelect T="string" Value="@_valueString" ValueChanged="@StringValueChanged" @bind-SelectedValues="@MultiSelectValues" MultiSelection="true" FullWidth="true" Required="true" Dense="true">
-                        @foreach (var item in GetEnumValues(typeof(T).GetProperty(Leaf.Value.Field).PropertyType))
+                        @foreach (var item in Enum.GetValues(Leaf.Value.FilterDefinition.underlyingDataType))
                         {
                             <MudSelectItem T="string" Value="@((string)@item.ToString())">@item</MudSelectItem>
                         }
@@ -59,7 +62,7 @@
             {
                 <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                     <MudSelect T="Enum" Value="@_valueEnum" ValueChanged="@EnumValueChanged" MultiSelection="false" FullWidth="true" Required="true" Dense="true">
-                        @foreach (var item in GetEnumValues(typeof(T).GetProperty(Leaf.Value.Field).PropertyType))
+                        @foreach (var item in Enum.GetValues(Leaf.Value.FilterDefinition.underlyingDataType))
                         {
                             <MudSelectItem T="Enum" Value="@((Enum)item)">@item</MudSelectItem>
                         }
@@ -67,8 +70,7 @@
                 </MudPaper>
             }
         }
-        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) &&
-        (typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(bool) || typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(bool?)))
+        else if (TypeIdentifier.IsBoolean(Leaf.Value.FilterDefinition.dataType))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudSelect Class="flex-shrink-1" T="bool?" Value="@_valueBool" ValueChanged="@BoolValueChanged" Required="true" Dense="true">
@@ -77,10 +79,7 @@
                 </MudSelect>
             </MudPaper>
         }
-        else if (!string.IsNullOrWhiteSpace(Leaf.Value.Field ?? string.Empty) &&
-        (typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(DateTime)
-        ||  typeof(T).GetProperty(Leaf.Value.Field).PropertyType == typeof(DateTime?))
-        && !(Leaf.Value.Operator ?? "").EndsWith("empty"))
+        else if (TypeIdentifier.IsDateTime(Leaf.Value.FilterDefinition.dataType) && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudDatePicker Class="flex-shrink-1" Date="@_valueDate" DateChanged="@DateValueChanged" Required="true" />
@@ -103,5 +102,5 @@
             </MudButtonGroup>
         </MudStack>
     }
-    <MudIconButton Class="flex-none" Icon="@Icons.Outlined.Close" OnClick="() => RemoveExpressionRule()" Color="Color.Primary" Size="Size.Small"></MudIconButton>
+    <MudIconButton Class="flex-none" Icon="@Icons.Material.Outlined.Close" OnClick="() => RemoveExpressionRule()" Color="Color.Primary" Size="Size.Small"></MudIconButton>
 </MudStack>

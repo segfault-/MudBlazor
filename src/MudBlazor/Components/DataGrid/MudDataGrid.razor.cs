@@ -31,7 +31,7 @@ namespace MudBlazor
         private List<GroupDefinition<T>> _groups = new List<GroupDefinition<T>>();
         internal HashSet<T> _openHierarchies = new HashSet<T>();
         private PropertyInfo[] _properties = typeof(T).GetProperties();
-
+        private MudDropContainer<Column<T>> DropContainer;
         protected string _classname =>
             new CssBuilder("mud-table")
                .AddClass("mud-data-grid")
@@ -119,7 +119,14 @@ namespace MudBlazor
             return false;
         }
 
-        private async Task ItemUpdatedAsync(MudItemDropInfo<Column<T>> dropItem)
+        private static void Swap<TItem>(List<TItem> list, int indexA, int indexB)
+        {
+            TItem tmp = list[indexA];
+            list[indexA] = list[indexB];
+            list[indexB] = tmp;
+        }
+
+        private Task ItemUpdatedAsync(MudItemDropInfo<Column<T>> dropItem)
         {
             dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
 
@@ -130,19 +137,23 @@ namespace MudBlazor
                 var dragAndDropSourceIndex = RenderedColumns.IndexOf(dragAndDropSource);
                 var dragAndDropDestinationIndex = RenderedColumns.IndexOf(dragAndDropDestination);
 
-                RenderedColumns.Remove(dragAndDropSource);
-                RenderedColumns.Insert(dragAndDropDestinationIndex, dragAndDropSource);
+                Swap<Column<T>>(RenderedColumns, dragAndDropSourceIndex, dragAndDropDestinationIndex);
 
-                var gridHeight = await GetActualHeight();
-                double dragAndDropSourceWidth = await dragAndDropSource.HeaderCell.GetCurrentCellWidthAsync();
-                double dragAndDropDestinationWidth = await dragAndDropDestination.HeaderCell.GetCurrentCellWidthAsync();
+                //var gridHeight = await GetActualHeight();
 
-                await dragAndDropSource.HeaderCell.UpdateColumnWidthAsync(dragAndDropDestinationWidth, gridHeight, true);
-                await dragAndDropDestination.HeaderCell.UpdateColumnWidthAsync(dragAndDropSourceWidth, gridHeight, true);
+                // swap source / destination
+                var dest = dragAndDropDestination.HeaderCell.Width;
+                var src = dragAndDropSource.HeaderCell.Width;
+
+                dragAndDropSource.HeaderCell._width = dest;
+                dragAndDropDestination.HeaderCell._width = src;
+
+                //await dragAndDropSource.HeaderCell.UpdateColumnWidthAsync(dragAndDropDestinationWidth, gridHeight, true);
+                //await dragAndDropDestination.HeaderCell.UpdateColumnWidthAsync(dragAndDropSourceWidth, gridHeight, true);
 
                 StateHasChanged();
             }
-
+            return Task.CompletedTask;
             
         }
 
@@ -774,7 +785,6 @@ namespace MudBlazor
         {
             if (firstRender)
             {
-                await InvokeServerLoadFunc();
                 GroupItems();
                 if (ServerData == null)
                     StateHasChanged();
@@ -866,7 +876,7 @@ namespace MudBlazor
         {
             var column = RenderedColumns.FirstOrDefault(x => x.filterable);
 
-            FilterDefinitions.Add(new FilterDefinition<T>
+            var filterDef = new FilterDefinition<T>
             {
                 Id = Guid.NewGuid(),
                 DataGrid = this,
@@ -874,7 +884,10 @@ namespace MudBlazor
                 Title = column?.Title,
                 //FieldType = column?.PropertyType,
                 PropertyExpression = column?.PropertyExpression,
-            });
+            };
+
+            FilterDefinitions.Add(filterDef);
+            RootExpression.Rules.Add(new Rule<T>(null, filterDef));
             _filtersMenuVisible = true;
             StateHasChanged();
         }
@@ -894,7 +907,7 @@ namespace MudBlazor
         public void AddFilter(FilterDefinition<T> definition)
         {
             FilterDefinitions.Add(definition);
-            RootExpression.Rules.Add(new Rule<T>(null, definition.Title));
+            RootExpression.Rules.Add(new Rule<T>(null, definition));
             _filtersMenuVisible = true;
             StateHasChanged();
         }
@@ -1258,6 +1271,11 @@ namespace MudBlazor
             StateHasChanged();
         }
 
+        internal void DropContainerHasChanged()
+        {
+            DropContainer?.Refresh();
+        }
+
         public void GroupItems()
         {          
             if (GroupedColumn == null)
@@ -1379,11 +1397,52 @@ namespace MudBlazor
         #endregion
 
         #region COMPLEX
-        public Rule<T> RootExpression { get; set; } = new(null, null) { Condition = Condition.AND };
+        public Rule<T> RootExpression { get; set; } = new() { Condition = Condition.AND };
+
+        /// <summary>
+        /// Hydrate columns with filters, this must be called AFTER columns are rendered
+        /// </summary>
+        /// <param name="rootExpression"></param>"
+        public void SetRootExpression(Rule<T> rootExpresion)
+        {
+            List<Rule<T>> rules = LinqRecursiveHelper.Traverse(rootExpresion.Rules, rules => rules.Rules).ToList();
+
+            foreach(Rule<T> rule in rules) 
+            {
+                var column = this.GetColumnByPropertyName(rule.Field);
+                if (column != null)
+                {
+                    var filterDef = new FilterDefinition<T>
+                    {
+                        Id = Guid.NewGuid(),
+                        DataGrid = this,
+                        //Field = column?.PropertyName,
+                        Title = column.Title,
+                        //FieldType = column?.PropertyName,
+                        PropertyExpression = column.PropertyExpression,
+                        Operator = rule.Operator,
+                        Value = rule.Value,
+                        Column = column
+                    };
+                    rule.FilterDefinition = filterDef;
+                    FilterDefinitions.Add(filterDef);
+                    StateHasChanged();
+                }
+                else
+                {
+
+                }
+            }
+
+            RootExpression = rootExpresion;
+
+        }
+
+
 
         protected void AddRootExpressionRule()
         {
-            RootExpression.Rules.Add(new Rule<T>(null, null));
+            RootExpression.Rules.Add(new Rule<T>(null, new FilterDefinition<T>()));
         }
 
         private void SetRootButtonText(int id)
@@ -1413,14 +1472,21 @@ namespace MudBlazor
                 Page = CurrentPage,
                 PageSize = RowsPerPage,
                 SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
-                RootExpression = RootExpression.DeepClone()
+                RootExpression = RootExpression.DeepClone(),
+                RenderedColumns = this.RenderedColumns.Where(rc => !string.IsNullOrWhiteSpace(rc.PropertyName)).Select(rc => new GridColumn()
+                {
+                    RenderedIndex = RenderedColumns.IndexOf(rc),
+                    Field = rc.PropertyName,
+                    Hidden = rc.Hidden,
+                    Width = rc.HeaderCell.Width
+                }).ToList()
             };
 
-            foreach (var fd in FilterDefinitions)
-            {
-                var x = fd.GenerateFilterExpression();
-                Console.WriteLine(x.ToString());
-            }
+            //foreach (var fd in FilterDefinitions)
+            //{
+            //    var x = fd.GenerateFilterExpression();
+            //    Console.WriteLine(x.ToString());
+            //}
 
             // deep copy
             return state;

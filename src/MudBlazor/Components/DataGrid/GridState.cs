@@ -18,6 +18,7 @@ namespace MudBlazor
         [JsonPropertyName("SortDefinitions")] public ICollection<SortDefinition<T>> SortDefinitions { get; set; } = new List<SortDefinition<T>>();
 
         [JsonPropertyName("RootExpression")] public Rule<T> RootExpression { get; set; } = new Rule<T>();
+        [JsonPropertyName("RenderedColumns")] public ICollection<GridColumn> RenderedColumns { get; set; } = new List<GridColumn>();
     }
 
     public class GridData<T>
@@ -25,5 +26,13 @@ namespace MudBlazor
         public IEnumerable<T> Items { get; set; } = Enumerable.Empty<T>();
 
         public int TotalItems { get; set; }
+    }
+
+    public class GridColumn
+    {
+        [JsonPropertyName("RenderedIndex")] public int RenderedIndex { get; set; }
+        [JsonPropertyName("Field")] public string Field { get; set; }
+        [JsonPropertyName("Hidden")] public bool Hidden { get; set; }
+        [JsonPropertyName("Width")] public double? Width { get; set; }
     }
 }

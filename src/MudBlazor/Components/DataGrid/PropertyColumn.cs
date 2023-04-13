@@ -90,15 +90,15 @@ namespace MudBlazor
             get
             {
                 var ue = Property.Body as UnaryExpression;
-                var pe = Property.Body as MemberExpression;
+                var me = Property.Body as MemberExpression;
 
                 if (ue != null)
                 {
                     return ue.Operand.Type;
                 }
-                if (pe != null)
+                if (me != null)
                 {
-                    return pe.GetType();
+                    return ((PropertyInfo)me.Member).PropertyType;
                 }
                 throw new ArgumentException(nameof(Property));
             }

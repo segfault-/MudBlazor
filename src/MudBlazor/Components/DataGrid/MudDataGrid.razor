@@ -42,7 +42,7 @@
                 </div>
             }
             <div @ref=_gridElement class="@_tableClass" style="@_tableStyle">
-                <MudDropContainer T="Column<T>" Items="@RenderedColumns" ItemsSelector="(item, dropzone) => RenderedColumnsItemsSelector(item, dropzone)" ItemDropped="async (item) => await ItemUpdatedAsync(item)" CanDropClass="mud-border-success" NoDropClass="mud-border-error">
+                <MudDropContainer @ref="DropContainer" T="Column<T>" Items="@RenderedColumns" ItemsSelector="(item, dropzone) => RenderedColumnsItemsSelector(item, dropzone)" ItemDropped="async (item) => await ItemUpdatedAsync(item)" CanDropClass="mud-border-success" NoDropClass="mud-border-error">
                     <ChildContent>
                         <table class="mud-table-root">
                             @if (ColGroup != null)
@@ -59,7 +59,7 @@
                                     @foreach (var column in RenderedColumns)
                                     {
                                         <CascadingValue IsFixed="true" Value="column">
-                                            <HeaderCell SortDirection="@(GetColumnSortDirection(column.PropertyName))" T="T" />
+                                            <HeaderCell InitialWidth="@column.InitialWidth" SortDirection="@(GetColumnSortDirection(column.PropertyName))" T="T" />
                                         </CascadingValue>
                                     }
                                 </tr>
@@ -449,7 +449,7 @@
                 {
                     if (column.ContentFormat != null)
                     {
-                        @(((IFormattable)cell.ComputedValue).ToString(column.ContentFormat, column.Culture))
+                        @(((IFormattable)cell.ComputedValue)?.ToString(column.ContentFormat, column.Culture))
                     }
                     else
                         @cell.ComputedValue

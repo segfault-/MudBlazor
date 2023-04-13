@@ -4,13 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using MudBlazor.Charts;
-using static MudBlazor.Colors;
 
 namespace MudBlazor
 {
@@ -44,31 +41,31 @@ namespace MudBlazor
         private TimeSpan? _valueTime;
         private bool _isMultSelect;
 
-        private string Field
+        private Column<T> Column
         {
-            get => Leaf.Value.Field;
+            get => Leaf.Value.FilterDefinition.Column;
             set
             {
                 Type dtBefore = null;
-                if (Leaf.Value.Field != null)
+                if(Leaf.Value.FilterDefinition.Column != null)
                 {
-                    dtBefore = typeof(T).GetProperty(Leaf.Value.Field).PropertyType;
+                    dtBefore = Leaf.Value.FilterDefinition.Column.dataType;
                 }
-                Leaf.Value.Field = value;
-                var dtAfter = typeof(T).GetProperty(Leaf.Value.Field).PropertyType;
+                Leaf.Value.FilterDefinition.Column = value;
+                var dtAfter = Leaf.Value.FilterDefinition.Column.dataType;
 
-                if (dtBefore != dtAfter)
+                if(dtBefore != dtAfter)
                 {
                     ClearValueStates();
                     Operator = null;
-                    Value = null;
+                    Leaf.Value.FilterDefinition.Value = null;
                 }
             }
         }
 
         private string Operator
         {
-            get => Leaf.Value.Operator;
+            get => Leaf.Value.FilterDefinition.Operator;
             set
             {
                 if (value != null)
@@ -79,29 +76,19 @@ namespace MudBlazor
                     }
                     else if (!string.IsNullOrEmpty(Operator))
                     {
-                        if (Leaf.Value.Operator.Equals("is one of") || Leaf.Value.Operator.Equals("is not one of"))
+                        if (Leaf.Value.FilterDefinition.Operator.Equals("is one of") || Leaf.Value.FilterDefinition.Operator.Equals("is not one of"))
                         {
                             ClearValueStates();
-                            Value = null;
+                            Leaf.Value.FilterDefinition.Value = null;
                         }
 
                         MultiSelectValues = new HashSet<string>();
                         _isMultSelect = false;
                     }
                 }
-                Leaf.Value.Operator = value;
+                Leaf.Value.FilterDefinition.Operator = value;
             }
         }
-
-        private object Value
-        {
-            get => Leaf.Value.Value;
-            set
-            {
-                Leaf.Value.Value = value;
-            }
-        }
-
 
         private IEnumerable<string> MultiSelectValues { get; set; } = new HashSet<string>();
 
@@ -116,12 +103,12 @@ namespace MudBlazor
 
         protected override Task OnParametersSetAsync()
         {
-            if (Leaf.Value.Field == null)
+            if (Leaf.Value.FilterDefinition == null)
             {
                 return base.OnParametersSetAsync();
             }
-            var dataType = typeof(T).GetProperty(Leaf.Value.Field).PropertyType;
-            if (dataType == typeof(string))
+
+            if (TypeIdentifier.IsString(Leaf.Value.FilterDefinition.dataType))
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -132,7 +119,7 @@ namespace MudBlazor
                     _valueString = Leaf.Value.Value?.ToString();
                 }
             }
-            else if (IsNumber)
+            else if (TypeIdentifier.IsNumber(Leaf.Value.FilterDefinition.dataType))
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -143,7 +130,7 @@ namespace MudBlazor
                     _valueNumber = Leaf.Value.Value == null ? null : Convert.ToDouble(Leaf.Value.Value);
                 }
             }
-            else if (IsEnum)
+            else if (TypeIdentifier.IsEnum(Leaf.Value.FilterDefinition.dataType))
             {
                 if (Leaf.Value.Value == null)
                 {
@@ -171,7 +158,7 @@ namespace MudBlazor
                     }
                     else
                     {
-                        if (Leaf.Value.Operator.Equals("is one of") || Leaf.Value.Operator.Equals("is not one of"))
+                        if (Leaf.Value.FilterDefinition.Operator.Equals("is one of") || Leaf.Value.FilterDefinition.Operator.Equals("is not one of"))
                         {
                             _isMultSelect = true;
                             if (Leaf.Value.Value is JsonElement element)
@@ -185,7 +172,7 @@ namespace MudBlazor
                         }
                         else
                         {
-                            var t = typeof(T).GetProperty(Leaf.Value.Field).PropertyType;
+                            var t = Leaf.Value.FilterDefinition.dataType;
                             var tt = Nullable.GetUnderlyingType(t) ?? t;
                             var v = (Enum)Enum.ToObject(tt, ((JsonElement)Leaf.Value.Value).GetInt32());
                             _valueEnum = v;
@@ -193,7 +180,7 @@ namespace MudBlazor
                     }
                 }
             }
-            else if (dataType == typeof(bool) || dataType == typeof(bool?))
+            else if (TypeIdentifier.IsBoolean(Leaf.Value.FilterDefinition.dataType))
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -204,7 +191,7 @@ namespace MudBlazor
                     _valueBool = Leaf.Value.Value == null ? null : Convert.ToBoolean(Leaf.Value.Value);
                 }
             }
-            else if (dataType == typeof(DateTime) || dataType == typeof(DateTime?))
+            else if (TypeIdentifier.IsDateTime(Leaf.Value.FilterDefinition.dataType))
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -256,8 +243,8 @@ namespace MudBlazor
             }
 
             Leaf.Items.Add(CloneRule());
-            Leaf.Value.Field = null;
-            Leaf.Value.Operator = null;
+            //Leaf.Value.Field = null;
+            //Leaf.Value.Operator = null;
             Leaf.Value.Value = null;
             Leaf.Value.IsExpanded = true;
             Leaf.Value.Disabled = false;
@@ -299,19 +286,14 @@ namespace MudBlazor
         {
             if (MultiSelectValues.Any())
             {
-                var rr = new Rule<T>(null, Leaf.Value.Field)
+                var rr = new Rule<T>(null, Leaf.Value.FilterDefinition)
                 {
-                    Operator = Leaf.Value.Operator,
-                    Value = MultiSelectValues,
                 };
                 return rr;
             }
 
-            var r = new Rule<T>(null, Leaf.Value.Field)
+            var r = new Rule<T>(null, Leaf.Value.FilterDefinition)
             {
-                Operator = Leaf.Value.Operator,
-                Value = Leaf.Value.Value,
-
             };
             return r;
         }
