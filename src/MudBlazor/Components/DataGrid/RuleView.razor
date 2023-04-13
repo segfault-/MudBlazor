@@ -26,7 +26,7 @@
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="@Operator" FullWidth="true" Required="true" Dense="true">
-                    @foreach (var o in FilterOperator.GetOperatorByDataType(Leaf.Value.FilterDefinition.dataType))
+                    @foreach (var o in FilterOperator.GetOperatorByDataType(@Leaf.Value.FilterDefinition.dataType))
                     {
                         <MudSelectItem Value="@o">@o</MudSelectItem>
                     }

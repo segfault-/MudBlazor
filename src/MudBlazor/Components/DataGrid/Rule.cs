@@ -27,6 +27,7 @@ namespace MudBlazor
         //}
 
         public Rule(Rule<T> parent, FilterDefinition<T> filterDefinition)
+            :this()
         {
             Parent = parent;
             FilterDefinition = filterDefinition;

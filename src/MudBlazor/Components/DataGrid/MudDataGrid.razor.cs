@@ -1403,9 +1403,9 @@ namespace MudBlazor
         /// Hydrate columns with filters, this must be called AFTER columns are rendered
         /// </summary>
         /// <param name="rootExpression"></param>"
-        public void SetRootExpression(Rule<T> rootExpresion)
+        public void SetRootExpression(Rule<T> rootExpression)
         {
-            List<Rule<T>> rules = LinqRecursiveHelper.Traverse(rootExpresion.Rules, rules => rules.Rules).ToList();
+            List<Rule<T>> rules = LinqRecursiveHelper.Traverse(rootExpression.Rules, rule => rule.Rules).ToList();
 
             foreach(Rule<T> rule in rules) 
             {
@@ -1434,7 +1434,7 @@ namespace MudBlazor
                 }
             }
 
-            RootExpression = rootExpresion;
+            RootExpression = rootExpression;
 
         }
 

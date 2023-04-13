@@ -25,7 +25,7 @@ namespace MudBlazor
             get => _width;
             set
             {
-                if (_width != null) 
+                if (_width == null) 
                 {
                     _width = value;
                 }
