@@ -913,6 +913,7 @@ namespace MudBlazor
         {
             FilterDefinitions.Clear();
             RootExpression.Rules.Clear();
+            return Task.CompletedTask;
         }
 
         public async Task AddFilterAsync(FilterDefinition<T> definition)
@@ -1508,12 +1509,5 @@ namespace MudBlazor
             // deep copy
             return state;
         }
-
-        internal async Task ApplyFiltersAsync()
-        {
-            _filtersMenuVisible = false;
-            InvokeServerLoadFunc().AndForget();
-        }
-
     }
 }

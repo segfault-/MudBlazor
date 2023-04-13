@@ -289,13 +289,6 @@ namespace MudBlazor
         [Category(CategoryTypes.TreeView.Behavior)]
         public RenderFragment<MudTreeViewItem<T>> ContentWithContext { get; set; }
 
-        /// <summary>
-        /// Content of the item body, if used replaced the text, end text and end icon rendering.
-        /// </summary>
-        [Parameter]
-        [Category(CategoryTypes.TreeView.Behavior)]
-        public RenderFragment<MudTreeViewItem<T>> BodyContent { get; set; }
-
         public bool Loading { get; set; }
 
         bool HasChild => ChildContent != null ||

@@ -78,9 +78,9 @@
                                             <MudButton Class="mt-2" StartIcon="@Icons.Material.Filled.Add" OnClick="@AddFilter" Color="@Color.Primary">Add Filter</MudButton>
                                             @if (ServerData != null)
                                             {
-                                                <MudButton Class="mt-2" StartIcon="@Icons.Material.Filled.Add" OnClick="@ApplyFilters" Color="@Color.Primary">Apply</MudButton>
+                                                <MudButton Class="mt-2" StartIcon="@Icons.Material.Filled.Add" OnClick="@ApplyFiltersAsync" Color="@Color.Primary">Apply</MudButton>
                                             }
-                                            <MudButton Class="mt-2" StartIcon="@Icons.Material.Filled.Remove" OnClick="@ClearFilters" Color="@Color.Primary">Clear</MudButton>
+                                            <MudButton Class="mt-2" StartIcon="@Icons.Material.Filled.Remove" OnClick="@ClearFiltersAsync" Color="@Color.Primary">Clear</MudButton>
                                         }
                                         else
                                         {
@@ -112,7 +112,7 @@
                                                 </MudButtonGroup>
                                                 <MudMenu Icon="@Icons.Material.Rounded.MoreVert" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" ListClass="pa-2 d-flex flex-column" PopoverClass="mud-elevation-25">
                                                     <MudButton Size="Size.Small" Color="@Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="(async () => await ApplyFiltersAsync())">Apply</MudButton>
-                                                    <MudButton Size="Size.Small" Color="@Color.Warning" StartIcon="@Icons.Material.Filled.Clear" OnClick="@ClearFilters">Clear</MudButton>
+                                                    <MudButton Size="Size.Small" Color="@Color.Warning" StartIcon="@Icons.Material.Filled.Clear" OnClick="@ClearFiltersAsync">Clear</MudButton>
                                                 </MudMenu>
                                             </MudToolBar>
                                         </MudPaper>

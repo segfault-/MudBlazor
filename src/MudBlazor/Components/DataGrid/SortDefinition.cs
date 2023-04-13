@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace MudBlazor
@@ -11,5 +12,6 @@ namespace MudBlazor
         [property: JsonPropertyName("SortBy")] string SortBy,
         [property: JsonPropertyName("Descending")] bool Descending,
         [property: JsonPropertyName("Index")] int Index,
-        [property: JsonIgnore] Func<T, object> SortFunc);
+        [property: JsonIgnore] Func<T, object> SortFunc,
+        [property: JsonIgnore] IComparer<object> Comparer = null);
 }
