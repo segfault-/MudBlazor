@@ -820,7 +820,7 @@ namespace MudBlazor.UnitTests.Components
         /// ReadOnly TextFields should not validate when blurred
         /// </summary>
         [Test]
-        public async Task ReadOnlyTextFieldShouldNotValdidate()
+        public async Task ReadOnlyTextFieldShouldNotValidate()
         {
             var comp = Context.RenderComponent<MudTextField<string>>(parameters => parameters
             .Add(p => p.ReadOnly, true)
@@ -828,6 +828,39 @@ namespace MudBlazor.UnitTests.Components
 
             comp.Find("input").Blur();
             comp.FindAll("div.mud-input-error").Count.Should().Be(0);
+        }
+
+        /// <summary>
+        /// https://github.com/MudBlazor/MudBlazor/issues/6322
+        /// </summary>
+        [Test]
+        public async Task OnBlurErrorContentCaughtException()
+        {
+            var comp = Context.RenderComponent<TextFieldErrorContenCaughtException>();
+            await comp.Find("input").BlurAsync(new FocusEventArgs());
+            var mudAlert = comp.FindComponent<MudAlert>();
+            var text = mudAlert.Find("div.mud-alert-message");
+            text.InnerHtml.Should().Be("Oh my! We caught an error and handled it!");
+        }
+
+        [Test]
+        public async Task OnKeyDownErrorContentCaughtException()
+        {
+            var comp = Context.RenderComponent<TextFieldErrorContenCaughtException>();
+            await comp.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Enter", Type = "keydown" });
+            var mudAlert = comp.FindComponent<MudAlert>();
+            var text = mudAlert.Find("div.mud-alert-message");
+            text.InnerHtml.Should().Be("Oh my! We caught an error and handled it!");
+        }
+
+        [Test]
+        public async Task OnKeyUpErrorContentCaughtException()
+        {
+            var comp = Context.RenderComponent<TextFieldErrorContenCaughtException>();
+            await comp.Find("input").KeyUpAsync(new KeyboardEventArgs { Key = "Enter", Type = "keyup" });
+            var mudAlert = comp.FindComponent<MudAlert>();
+            var text = mudAlert.Find("div.mud-alert-message");
+            text.InnerHtml.Should().Be("Oh my! We caught an error and handled it!");
         }
     }
 }
