@@ -241,17 +241,6 @@ namespace MudBlazor
                 DataGrid.SelectedAllItemsChangedEvent += OnSelectedAllItemsChanged;
                 DataGrid.SelectedItemsChangedEvent += OnSelectedItemsChanged;
             }
-            // FU
-            //if (Column != null)
-            //{
-            //    Column.HeaderCell = this;
-
-            //    if (Column.filterable)
-            //    {
-            //        Column.FilterContext.HeaderCell = this;
-            //    }
-
-            //}
         }
 
         #region Events

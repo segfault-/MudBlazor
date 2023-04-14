@@ -322,18 +322,43 @@ namespace MudBlazor
         private static Expression GenerateFilterExpressionForBooleanType<T>(Rule<T> rule, Expression parameter)
         {
             var dataType = typeof(T).GetProperty(rule.Field).PropertyType;
-            var field = Expression.Convert(parameter, typeof(bool?));
-            var valueBool = GetBooleanFromObject(rule.Value);
-            var notNullBool = Expression.Convert(field, typeof(bool?));
 
-            return rule.Operator switch
+            if (dataType == typeof(bool))
             {
-                FilterOperator.Enum.Is when rule.Value != null =>
-                    Expression.Equal(notNullBool, Expression.Constant(valueBool, typeof(bool?))),
+                var field = Expression.Convert(parameter, typeof(bool));
+                var valueBool = GetBooleanFromObject(rule.Value);
+                var notNullBool = Expression.Convert(field, typeof(bool));
 
-                _ => Expression.Constant(true, typeof(bool?))
-            };
+                return rule.Operator switch
+                {
+                    FilterOperator.Enum.Is when rule.Value != null =>
+                        Expression.Equal(notNullBool, Expression.Constant(valueBool, typeof(bool))),
+
+                    _ => Expression.Constant(true, typeof(bool))
+                };
+
+            }
+            else if (dataType == typeof(bool?))
+            {
+                var field = Expression.Convert(parameter, typeof(bool?));
+                var valueBool = GetBooleanFromObject(rule.Value);
+                var notNullBool = Expression.Convert(field, typeof(bool?));
+
+                return rule.Operator switch
+                {
+                    FilterOperator.Enum.Is when rule.Value != null =>
+                        Expression.Equal(notNullBool, Expression.Constant(valueBool, typeof(bool?))),
+
+                    _ => Expression.Constant(true, typeof(bool))
+                };
+            }
+            else
+            {
+                throw new NotSupportedException("The property type is not supported");
+            }
         }
+
+
 
         private static bool IsNullableEnum(Type t)
         {

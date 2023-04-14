@@ -206,6 +206,7 @@ namespace MudBlazor
                     _valueTime = Leaf.Value.Value == null ? null : dateTime.TimeOfDay;
                 }
             }
+            Root?.DropContainerHasChanged();
             return base.OnParametersSetAsync();
         }
 
@@ -303,36 +304,42 @@ namespace MudBlazor
         {
             Root?.RemoveRule(Leaf.Value);
             Leaf.Parent?.Items.Remove(Leaf.Value);
+            Root?.DropContainerHasChanged();
         }
 
         internal void StringValueChanged(string value)
         {
             Leaf.Value.Value = value;
             _valueString = value;
+            Root?.DropContainerHasChanged();
         }
 
         internal void NumberValueChanged(double? value)
         {
             Leaf.Value.Value = value;
             _valueNumber = value;
+            Root?.DropContainerHasChanged();
         }
 
         internal void EnumValueChanged(Enum value)
         {
             Leaf.Value.Value = value;
             _valueEnum = value;
+            Root?.DropContainerHasChanged();
         }
 
         internal void ObjectValueChanged(object value)
         {
             Leaf.Value.Value = value;
             _valueObject = value;
+            Root?.DropContainerHasChanged();
         }
 
         internal void BoolValueChanged(bool? value)
         {
             Leaf.Value.Value = value;
             _valueBool = value;
+            Root?.DropContainerHasChanged();
         }
 
         internal void DateValueChanged(DateTime? value)
@@ -354,7 +361,7 @@ namespace MudBlazor
             {
                 Leaf.Value.Value = value;
             }
-
+            Root?.DropContainerHasChanged();
             //DataGrid.GroupItems();
         }
 
@@ -374,7 +381,7 @@ namespace MudBlazor
 
                 Leaf.Value.Value = date;
             }
-
+            Root?.DropContainerHasChanged();
             //DataGrid.GroupItems();
         }
         private bool IsString
