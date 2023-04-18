@@ -1443,7 +1443,7 @@ namespace MudBlazor
                     };
                     rule.FilterDefinition = filterDef;
                     FilterDefinitions.Add(filterDef);
-                    StateHasChanged();
+                    //StateHasChanged();
                 }
                 else
                 {
@@ -1452,7 +1452,7 @@ namespace MudBlazor
             }
 
             RootExpression = rootExpression;
-
+            DropContainerHasChanged();
         }
 
 
