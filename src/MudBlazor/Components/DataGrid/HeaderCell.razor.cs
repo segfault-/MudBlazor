@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -19,21 +20,8 @@ namespace MudBlazor
         [CascadingParameter] public MudDataGrid<T> DataGrid { get; set; }
         [CascadingParameter(Name = "IsOnlyHeader")] public bool IsOnlyHeader { get; set; } = false;
 
-        [CascadingParameter] public Column<T> Column { get; set; }
+        [Parameter] public Column<T> Column { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
-        [Parameter] public double? InitialWidth
-        {
-            get => _width;
-            set
-            {
-                if (_width == null) 
-                {
-                    _width = value;
-                }
-            }
-        }
-
-
 
         private SortDirection _initialDirection;
         private bool _isSelected;
@@ -87,16 +75,7 @@ namespace MudBlazor
 
         private ElementReference _headerElement;
 
-        private double? __width;
-        internal double? _width
-        {
-            get => __width;
-            set
-            {
-                __width = value;
-            }
-        }
-
+        internal double? _width;
         public double? Width
         {
             get => _width;
@@ -171,6 +150,9 @@ namespace MudBlazor
         {
             get
             {
+                if (!sortable && !filterable && !groupable)
+                    return false;
+
                 return Column?.ShowColumnOptions ?? DataGrid?.ShowColumnOptions ?? true;
             }
         }
@@ -201,15 +183,11 @@ namespace MudBlazor
                 if (DataGrid == null)
                     return false;
 
-                bool retVal = DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
-                retVal |= LinqRecursiveHelper.Traverse(DataGrid.RootExpression.Rules, rules => rules.Rules).Any(r => r.FilterDefinition.Title == Column.Title && r.FilterDefinition.Operator != null);
-
-                return retVal;
+                return DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
             }
         }
 
         #endregion
-
         protected override async Task OnParametersSetAsync()
         {
             if (Column != null)
@@ -304,7 +282,7 @@ namespace MudBlazor
                 _resizerHeight = null;
         }
 
-        internal async Task<double> UpdateColumnWidthAsync(double targetWidth, double gridHeight, bool finishResize)
+        internal async Task<double> UpdateColumnWidth(double targetWidth, double gridHeight, bool finishResize)
         {
             if (targetWidth > 0)
             {
@@ -319,10 +297,10 @@ namespace MudBlazor
                 await InvokeAsync(StateHasChanged);
             }
 
-            return await GetCurrentCellWidthAsync();
+            return await GetCurrentCellWidth();
         }
 
-        internal async Task<double> GetCurrentCellWidthAsync()
+        internal async Task<double> GetCurrentCellWidth()
         {
             var boundingRect = await _headerElement.MudGetBoundingClientRectAsync();
             return boundingRect.Width;
@@ -361,8 +339,7 @@ namespace MudBlazor
 
         internal async Task AddFilterAsync()
         {
-
-            if ((DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex) && Column != null)
+            if (DataGrid.FilterMode == DataGridFilterMode.Simple && Column != null)
             {
                 await DataGrid.AddFilterAsync(Column.FilterContext.FilterDefinition.Clone());
             }
@@ -375,7 +352,7 @@ namespace MudBlazor
 
         internal void OpenFilters()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex)
+            if (DataGrid.FilterMode == DataGridFilterMode.Simple)
                 DataGrid.OpenFilters();
             else if (DataGrid.FilterMode == DataGridFilterMode.ColumnFilterMenu)
             {
