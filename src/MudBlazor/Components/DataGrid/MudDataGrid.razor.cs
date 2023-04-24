@@ -530,6 +530,10 @@ namespace MudBlazor
         [Parameter] public RenderFragment PagerContent { get; set; }
 
         /// <summary>
+        /// Defines the MudTablePager position 
+        /// </summary>
+        [Parameter] public PagerPosition PagerPosition { get; set; } = PagerPosition.Bottom;
+
         /// Supply an async function which (re)loads filtered, paginated and sorted data from server.
         /// Table will await this func and update based on the returned TableData.
         /// Used only with ServerData
@@ -799,7 +803,6 @@ namespace MudBlazor
         {
             if (firstRender)
             {
-                await InvokeServerLoadFunc();
                 if (ServerData == null)
                     StateHasChanged();
                 _isFirstRendered = true;
@@ -847,14 +850,7 @@ namespace MudBlazor
             Loading = true;
             StateHasChanged();
 
-            var state = new GridState<T>
-            {
-                Page = CurrentPage,
-                PageSize = RowsPerPage,
-                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
-                // Additional ToList() here to decouple clients from internal list avoiding runtime issues
-                FilterDefinitions = FilterDefinitions.ToList()
-            };
+            var state = GetDataGridState();
 
             _server_data = await ServerData(state);
             _currentRenderFilteredItemsCache = null;            
@@ -897,7 +893,8 @@ namespace MudBlazor
         public void AddFilter()
         {
             var column = RenderedColumns.FirstOrDefault(x => x.filterable);
-            FilterDefinitions.Add(new FilterDefinition<T>
+
+            var filterDef = new FilterDefinition<T>
             {
                 Id = Guid.NewGuid(),
                 DataGrid = this,
@@ -905,7 +902,10 @@ namespace MudBlazor
                 Title = column?.Title,
                 //FieldType = column?.PropertyType,
                 PropertyExpression = column?.PropertyExpression,
-            });
+            };
+
+            FilterDefinitions.Add(filterDef);
+            RootExpression.Rules.Add(new Rule<T>(null, filterDef));
             _filtersMenuVisible = true;
             StateHasChanged();
         }
@@ -919,12 +919,14 @@ namespace MudBlazor
         public Task ClearFiltersAsync()
         {
             FilterDefinitions.Clear();
-            return InvokeServerLoadFunc();
+            RootExpression.Rules.Clear();
+            return Task.CompletedTask;
         }
 
         public async Task AddFilterAsync(FilterDefinition<T> definition)
         {
             FilterDefinitions.Add(definition);
+            RootExpression.Rules.Add(new Rule<T>(null, definition));
             _filtersMenuVisible = true;
             await InvokeServerLoadFunc();
             if (ServerData is null) StateHasChanged();
@@ -1414,5 +1416,100 @@ namespace MudBlazor
         }
 
         #endregion
+        #region COMPLEX
+        public Rule<T> RootExpression { get; set; } = new() { Condition = Condition.AND };
+
+        /// <summary>
+        /// Hydrate columns with filters, this must be called AFTER columns are rendered
+        /// </summary>
+        /// <param name="rootExpression"></param>"
+        public void SetRootExpression(Rule<T> rootExpression)
+        {
+            List<Rule<T>> rules = LinqRecursiveHelper.Traverse(rootExpression.Rules, rule => rule.Rules).ToList();
+
+            foreach(Rule<T> rule in rules) 
+            {
+                var column = this.GetColumnByPropertyName(rule.Field);
+                if (column != null)
+                {
+                    var filterDef = new FilterDefinition<T>
+                    {
+                        Id = Guid.NewGuid(),
+                        DataGrid = this,
+                        //Field = column?.PropertyName,
+                        Title = column.Title,
+                        //FieldType = column?.PropertyName,
+                        PropertyExpression = column.PropertyExpression,
+                        Operator = rule.Operator,
+                        Value = rule.Value,
+                        Column = column
+                    };
+                    rule.FilterDefinition = filterDef;
+                    FilterDefinitions.Add(filterDef);
+                    //StateHasChanged();
+                }
+                else
+                {
+
+                }
+            }
+
+            RootExpression = rootExpression;
+            DropContainerHasChanged();
+        }
+
+
+
+        protected void AddRootExpressionRule()
+        {
+            RootExpression.Rules.Add(new Rule<T>(null, new FilterDefinition<T>()));
+        }
+
+        private void SetRootButtonText(int id)
+        {
+            switch (id)
+            {
+                case 0:
+                    RootExpression.Condition = Condition.AND;
+                    break;
+                case 1:
+                    RootExpression.Condition = Condition.OR;
+                    break;
+            }
+        }
+
+        public void RemoveRule(Rule<T> rule)
+        {
+            RootExpression.Rules.Remove(rule);
+            StateHasChanged();
+        }
+        #endregion
+
+        public GridState<T> GetDataGridState()
+        {
+            var state = new GridState<T>()
+            {
+                Page = CurrentPage,
+                PageSize = RowsPerPage,
+                SortDefinitions = SortDefinitions.Values.OrderBy(sd => sd.Index).ToList(),
+                RootExpression = RootExpression.DeepClone(),
+                RenderedColumns = this.RenderedColumns.Where(rc => !string.IsNullOrWhiteSpace(rc.PropertyName)).Select(rc => new GridColumn()
+                {
+                    RenderedIndex = RenderedColumns.IndexOf(rc),
+                    Field = rc.PropertyName,
+                    Hidden = rc.Hidden,
+                    Width = rc.HeaderCell.Width
+                }).ToList()
+            };
+
+            //foreach (var fd in FilterDefinitions)
+            //{
+            //    var x = fd.GenerateFilterExpression();
+            //    Console.WriteLine(x.ToString());
+            //}
+
+            // deep copy
+            return state;
+        }
     }
 }

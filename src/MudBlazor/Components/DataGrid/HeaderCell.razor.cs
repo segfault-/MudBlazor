@@ -282,7 +282,7 @@ namespace MudBlazor
                 _resizerHeight = null;
         }
 
-        internal async Task<double> UpdateColumnWidth(double targetWidth, double gridHeight, bool finishResize)
+        internal async Task<double> UpdateColumnWidthAsync(double targetWidth, double gridHeight, bool finishResize)
         {
             if (targetWidth > 0)
             {
@@ -297,10 +297,10 @@ namespace MudBlazor
                 await InvokeAsync(StateHasChanged);
             }
 
-            return await GetCurrentCellWidth();
+            return await GetCurrentCellWidthAsync();
         }
 
-        internal async Task<double> GetCurrentCellWidth()
+        internal async Task<double> GetCurrentCellWidthAsync()
         {
             var boundingRect = await _headerElement.MudGetBoundingClientRectAsync();
             return boundingRect.Width;
