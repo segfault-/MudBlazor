@@ -80,6 +80,67 @@
                                 }
                             </MudPaper>
                         }
+                        @if (_filtersMenuVisible && FilterMode == DataGridFilterMode.Complex)
+                        {
+                            <MudOverlay Visible="true" OnClick="@(() => _filtersMenuVisible = false)"></MudOverlay>
+                            <MudPaper Class="d-flex flex-column"
+                                        Style="position:absolute;max-height:50vh;max-width:700px;width:100%;z-index:var(--mud-zindex-drawer)"
+                                        Elevation="25">
+                                <MudPaper Elevation="25" Square="true">
+                                    <MudToolBar DisableGutters="true">
+                                        <MudText Class="pl-8" Typo="Typo.subtitle1">
+                                            <b>Filters</b>
+                                        </MudText>
+                                        <MudSpacer />
+                                        <MudText Typo="Typo.subtitle2" Class="pr-4">
+                                            Root operator :
+                                        </MudText>
+                                        <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                                            <MudButton Disabled="true" Size="Size.Small">@RootExpression.Condition</MudButton>
+                                            <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown">
+                                                <MudMenuItem OnClick="() => SetRootButtonText(0)">AND</MudMenuItem>
+                                                <MudMenuItem OnClick="() => SetRootButtonText(1)">OR</MudMenuItem>
+                                            </MudMenu>
+                                        </MudButtonGroup>
+                                        <MudMenu Icon="@Icons.Material.Rounded.MoreVert" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" ListClass="pa-2 d-flex flex-column" PopoverClass="mud-elevation-25">
+                                            <MudButton Size="Size.Small" Color="@Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="(async () => await ApplyFiltersAsync())">Apply</MudButton>
+                                            <MudButton Size="Size.Small" Color="@Color.Warning" StartIcon="@Icons.Material.Filled.Clear" OnClick="@ClearFiltersAsync">Clear</MudButton>
+                                        </MudMenu>
+                                    </MudToolBar>
+                                </MudPaper>
+                                <MudPaper Class="mt-4" Elevation="0" Square="true">
+                                    <MudStack Row="true">
+                                        <MudFab Class="mt-n8 ml-4" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => AddRootExpressionRule()" />
+                                        <MudStack Class="flex-grow-1">
+                                            <MudStack Row="true" Class="pl-3" Justify="Justify.FlexStart">
+                                                <MudText Style="min-width:150px;max-width:150px">Column</MudText>
+                                                <MudText Style="min-width:150px;max-width:150px">Operator</MudText>
+                                                <MudStack Row="true" Class="flex-grow-1" Justify="Justify.Center">
+                                                    <MudText>Value</MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                            <MudDivider Class="ml-3 mr-3" />
+                                        </MudStack>
+                                    </MudStack>
+                                </MudPaper>
+                                <MudPaper Class="py-4" Style="height:100%;overflow-y:scroll" Elevation="0">
+                                    <MudForm>
+                                        <MudTreeView Items="@RootExpression.Rules" MultiSelection="true">
+                                            <ItemTemplate>
+                                                <MudTreeViewItem Items="@context.Rules" Value="@context" Expanded="@context.IsExpanded">
+                                                    <ContentWithContext Context="another_name">
+                                                        <CascadingValue Name="Root" IsFixed="true" Value="@this">
+                                                            <RuleView T="T" Leaf="@another_name" />
+                                                        </CascadingValue>
+                                                    </ContentWithContext>
+                                                </MudTreeViewItem>
+                                            </ItemTemplate>
+                                        </MudTreeView>
+                                    </MudForm>
+                                </MudPaper>
+                            </MudPaper>
+
+                        }
                         @if (_columnsPanelVisible)
                         {
                             <MudOverlay Visible="true" OnClick="@(() => _columnsPanelVisible = false)"></MudOverlay>
