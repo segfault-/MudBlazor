@@ -45,7 +45,7 @@ namespace MudBlazor
         private string _style =>
             new StyleBuilder()
                 .AddStyle(Column?.HeaderStyle)
-                .AddStyle("width", _width?.ToPx(), when: _width.HasValue)
+                .AddStyle("width", Width?.ToPx(), when: Width.HasValue)
                 .AddStyle(Style)
             .Build();
 
@@ -75,11 +75,8 @@ namespace MudBlazor
 
         private ElementReference _headerElement;
 
-        internal double? _width;
-        public double? Width
-        {
-            get => _width;
-        }
+
+        public double? Width { get; internal set; }
 
         private double? _resizerHeight;
         private bool _isResizing;
@@ -263,7 +260,7 @@ namespace MudBlazor
 
             if (args.Detail > 1) // Double click clears the width, hence setting it to minimum size.
             {
-                _width = null;
+                Width = null;
                 return;
             }
 
@@ -282,12 +279,12 @@ namespace MudBlazor
                 _resizerHeight = null;
         }
 
-        internal async Task<double> UpdateColumnWidthAsync(double targetWidth, double gridHeight, bool finishResize)
+        internal async Task<double> UpdateColumnWidth(double targetWidth, double gridHeight, bool finishResize)
         {
             if (targetWidth > 0)
             {
                 _resizerHeight = gridHeight;
-                _width = targetWidth;
+                Width = targetWidth;
                 await InvokeAsync(StateHasChanged);
             }
 
@@ -297,10 +294,10 @@ namespace MudBlazor
                 await InvokeAsync(StateHasChanged);
             }
 
-            return await GetCurrentCellWidthAsync();
+            return await GetCurrentCellWidth();
         }
 
-        internal async Task<double> GetCurrentCellWidthAsync()
+        internal async Task<double> GetCurrentCellWidth()
         {
             var boundingRect = await _headerElement.MudGetBoundingClientRectAsync();
             return boundingRect.Width;
