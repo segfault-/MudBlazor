@@ -336,7 +336,7 @@ namespace MudBlazor
 
         internal async Task AddFilterAsync()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple && Column != null)
+            if ((DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex) && Column != null)
             {
                 await DataGrid.AddFilterAsync(Column.FilterContext.FilterDefinition.Clone());
             }
@@ -349,7 +349,7 @@ namespace MudBlazor
 
         internal void OpenFilters()
         {
-            if (DataGrid.FilterMode == DataGridFilterMode.Simple)
+            if (DataGrid.FilterMode == DataGridFilterMode.Simple || DataGrid.FilterMode == DataGridFilterMode.Complex)
                 DataGrid.OpenFilters();
             else if (DataGrid.FilterMode == DataGridFilterMode.ColumnFilterMenu)
             {
