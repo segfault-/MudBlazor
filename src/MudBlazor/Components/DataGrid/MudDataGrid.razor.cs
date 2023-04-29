@@ -146,48 +146,6 @@ namespace MudBlazor
             
         }
 
-        internal bool RenderedColumnsItemsSelector(Column<T> item, string dropZone)
-        {
-            if (item.PropertyName == dropZone)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        private static void Swap<TItem>(List<TItem> list, int indexA, int indexB)
-        {
-            TItem tmp = list[indexA];
-            list[indexA] = list[indexB];
-            list[indexB] = tmp;
-        }
-
-        private Task ItemUpdatedAsync(MudItemDropInfo<Column<T>> dropItem)
-        {
-            dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
-
-            var dragAndDropSource = RenderedColumns.Where(rc => rc.PropertyName == dropItem.Item.PropertyName).SingleOrDefault();
-            var dragAndDropDestination = RenderedColumns.Where(rc => rc.PropertyName == dropItem.DropzoneIdentifier).SingleOrDefault();
-            if (dragAndDropSource != null && dragAndDropDestination != null)
-            {
-                var dragAndDropSourceIndex = RenderedColumns.IndexOf(dragAndDropSource);
-                var dragAndDropDestinationIndex = RenderedColumns.IndexOf(dragAndDropDestination);
-
-                Swap<Column<T>>(RenderedColumns, dragAndDropSourceIndex, dragAndDropDestinationIndex);
-
-                // swap source / destination
-                var dest = dragAndDropDestination.HeaderCell.Width;
-                var src = dragAndDropSource.HeaderCell.Width;
-
-                dragAndDropSource.HeaderCell._width = dest;
-                dragAndDropDestination.HeaderCell._width = src;
-
-                StateHasChanged();
-            }
-            return Task.CompletedTask;
-            
-        }
-
         public readonly List<Column<T>> RenderedColumns = new List<Column<T>>();
         internal T _editingItem;
 
