@@ -310,9 +310,9 @@
                     </ItemRenderer>
                 </MudDropContainer>
             </div>
-            @if (PagerContent != null && PagerPosition == PagerPosition.Bottom))
+            @if (PagerContent != null && PagerPosition == PagerPosition.Bottom)
             {
-                <div class="mud-table-pagination">
+                <div class="mud-table-pagination" style="position: sticky; left: 0;">
                     @PagerContent
                 </div>
             }
