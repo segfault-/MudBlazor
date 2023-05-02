@@ -35,6 +35,12 @@
                     </MudToolBar>
                 }
             }
+            @if (PagerContent != null && PagerPosition == PagerPosition.Top)
+            {
+                <div class="mud-table-pagination" style="position: sticky; left: 0;">
+                    @PagerContent
+                </div>
+            }
             <div @ref=_gridElement class="@_tableClass" style="@_tableStyle">
                 <MudDropContainer @ref="_dropContainer" T="Column<T>" Items="@RenderedColumns" ItemsSelector="(item, dropzone) => RenderedColumnsItemsSelector(item, dropzone)" ItemDropped="ItemUpdatedAsync" CanDropClass="@DropAllowedClass" NoDropClass="@DropNotAllowedClass" ApplyDropClassesOnDragStarted="@ApplyDropClassesOnDragStarted">
                     <ChildContent>
@@ -304,7 +310,7 @@
                     </ItemRenderer>
                 </MudDropContainer>
             </div>
-            @if (PagerContent != null)
+            @if (PagerContent != null && PagerPosition == PagerPosition.Bottom))
             {
                 <div class="mud-table-pagination">
                     @PagerContent
