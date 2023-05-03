@@ -14,7 +14,7 @@
             <MudSelect T="Column<T>" Disabled="Leaf.Disabled" @bind-Value="@Column" FullWidth="true" Required="true" Dense="true">
                 @foreach (var column in Root?.RenderedColumns ?? Enumerable.Empty<Column<T>>())
                 {
-                    if(column.Filterable != null && (bool)column.Filterable)
+                    if(Root.Filterable && (column.Filterable ?? true))
                     {
                         <MudSelectItem T="Column<T>" Value="@column">@column.Title</MudSelectItem>
                     }

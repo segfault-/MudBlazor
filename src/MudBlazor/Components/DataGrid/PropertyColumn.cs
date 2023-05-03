@@ -100,7 +100,7 @@ namespace MudBlazor
                 {
                     return ((PropertyInfo)me.Member).PropertyType;
                 }
-                throw new ArgumentException(nameof(Property));
+                return typeof(TProperty);
             }
         }
 

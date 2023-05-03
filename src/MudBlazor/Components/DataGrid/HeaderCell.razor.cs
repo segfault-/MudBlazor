@@ -180,7 +180,9 @@ namespace MudBlazor
                 if (DataGrid == null)
                     return false;
 
-                return DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
+                var retVal = DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null && x.Value != null);
+                retVal |= LinqRecursiveHelper.Traverse(DataGrid.RootExpression.Rules, rules => rules.Rules).Any(r => r.FilterDefinition.Title == Column.Title && r.FilterDefinition.Operator != null);
+                return retVal;
             }
         }
 
