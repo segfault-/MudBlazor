@@ -22,6 +22,7 @@ namespace MudBlazor
 
         [Parameter] public Column<T> Column { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public double? InitialWidth { get; set; }
 
         private SortDirection _initialDirection;
         private bool _isSelected;
@@ -205,6 +206,7 @@ namespace MudBlazor
         protected override async Task OnInitializedAsync()
         {
             _initialDirection = Column?.InitialDirection ?? SortDirection.None;
+            Width ??= InitialWidth;
 
             if (_initialDirection != SortDirection.None)
             {
