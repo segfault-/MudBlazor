@@ -51,13 +51,13 @@
   </Target>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.16" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.5" />
   </ItemGroup>
 
   <Target Name="ToolRestore">
@@ -106,6 +106,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="MudBlazor.UnitTests" />
+    <!--We need to make internal types to be visible for mocking-->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>
