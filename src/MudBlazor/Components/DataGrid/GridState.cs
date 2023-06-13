@@ -16,7 +16,7 @@ namespace MudBlazor
         [JsonPropertyName("PageSize")] public int PageSize { get; set; }
 
         [JsonPropertyName("SortDefinitions")] public ICollection<SortDefinition<T>> SortDefinitions { get; set; } = new List<SortDefinition<T>>();
-        [JsonIgnore] public ICollection<FilterDefinition<T>> FilterDefinitions { get; set; } = new List<FilterDefinition<T>>();
+        [JsonIgnore] public ICollection<IFilterDefinition<T>> FilterDefinitions { get; set; } = new List<IFilterDefinition<T>>();
 
 
         [JsonPropertyName("RootExpression")] public Rule<T> RootExpression { get; set; } = new Rule<T>();

@@ -26,32 +26,32 @@
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudSelect T="string" Disabled="Leaf.Disabled" @bind-Value="@Operator" FullWidth="true" Required="true" Dense="true">
-                    @foreach (var o in FilterOperator.GetOperatorByDataType(@Leaf.Value.FilterDefinition.dataType))
+                    @foreach (var o in FilterOperator.GetOperatorByDataType(@Leaf.Value.FilterDefinition.FieldType))
                     {
                         <MudSelectItem Value="@o">@o</MudSelectItem>
                     }
                 </MudSelect>
             </MudPaper>
         }
-        @if (TypeIdentifier.IsString(Leaf.Value.FilterDefinition.dataType) && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
+        @if (Leaf.Value.FilterDefinition.FieldType.IsString && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudTextField Class="flex-shrink-1" T="string" Value="@_valueString" ValueChanged="@StringValueChanged" Required="true" />
             </MudPaper>
         }
-        else if (TypeIdentifier.IsNumber(Leaf.Value.FilterDefinition.dataType) && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
+        else if (Leaf.Value.FilterDefinition.FieldType.IsNumber && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudNumericField Class="flex-shrink-1" T="double?" Value="@_valueNumber" ValueChanged="@NumberValueChanged" Required="true" />
             </MudPaper>
         }
-        else if (TypeIdentifier.IsEnum(Leaf.Value.FilterDefinition.dataType))
+        else if (Leaf.Value.FilterDefinition.FieldType.IsEnum)
         {
             @if ((Leaf.Value.FilterDefinition.Operator ?? "").Equals("is one of") || (Leaf.Value.FilterDefinition.Operator ?? "").Equals("is not one of"))
             {
                 <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                     <MudSelect T="string" Value="@_valueString" ValueChanged="@StringValueChanged" @bind-SelectedValues="@MultiSelectValues" MultiSelection="true" FullWidth="true" Required="true" Dense="true">
-                        @foreach (var item in Enum.GetValues(Leaf.Value.FilterDefinition.underlyingDataType))
+                        @foreach (var item in Enum.GetValues(Leaf.Value.FilterDefinition.FieldType.InnerType))
                         {
                             <MudSelectItem T="string" Value="@((string)@item.ToString())">@item</MudSelectItem>
                         }
@@ -62,7 +62,7 @@
             {
                 <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                     <MudSelect T="Enum" Value="@_valueEnum" ValueChanged="@EnumValueChanged" MultiSelection="false" FullWidth="true" Required="true" Dense="true">
-                        @foreach (var item in Enum.GetValues(Leaf.Value.FilterDefinition.underlyingDataType))
+                        @foreach (var item in Enum.GetValues(Leaf.Value.FilterDefinition.FieldType.InnerType))
                         {
                             <MudSelectItem T="Enum" Value="@((Enum)item)">@item</MudSelectItem>
                         }
@@ -70,7 +70,7 @@
                 </MudPaper>
             }
         }
-        else if (TypeIdentifier.IsBoolean(Leaf.Value.FilterDefinition.dataType))
+        else if (Leaf.Value.FilterDefinition.FieldType.IsBoolean)
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudSelect Class="flex-shrink-1" T="bool?" Value="@_valueBool" ValueChanged="@BoolValueChanged" Required="true" Dense="true">
@@ -79,7 +79,7 @@
                 </MudSelect>
             </MudPaper>
         }
-        else if (TypeIdentifier.IsDateTime(Leaf.Value.FilterDefinition.dataType) && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
+        else if (Leaf.Value.FilterDefinition.FieldType.IsDateTime && !(Leaf.Value.FilterDefinition.Operator ?? "").EndsWith("empty"))
         {
             <MudPaper Class="flex-initial" Width="25%" Elevation="0">
                 <MudDatePicker Class="flex-shrink-1" Date="@_valueDate" DateChanged="@DateValueChanged" Required="true" />

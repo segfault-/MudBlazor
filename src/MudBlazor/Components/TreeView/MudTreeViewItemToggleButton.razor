@@ -57,9 +57,9 @@
     [Parameter] [Category(CategoryTypes.TreeView.Appearance)] public Color ExpandedIconColor { get; set; } = Color.Default;
 
 
-    private Task ToggleAsync()
+    private async Task ToggleAsync()
     {
         Expanded = !Expanded;
-        return ExpandedChanged.InvokeAsync(Expanded);
+        await ExpandedChanged.InvokeAsync(Expanded);
     }
 }

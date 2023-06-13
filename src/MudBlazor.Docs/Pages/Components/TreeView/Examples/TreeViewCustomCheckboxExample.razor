@@ -16,9 +16,9 @@
 
 @code {
 
-  private HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
+    private List<TreeItemData> TreeItems { get; set; } = new List<TreeItemData>();
 
-  public class TreeItemData
+    public class TreeItemData
   {
     public TreeItemData Parent { get; set; } = null;
 
@@ -30,9 +30,9 @@
 
     public bool HasChild => TreeItems != null && TreeItems.Count > 0;
 
-    public HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
+        public List<TreeItemData> TreeItems { get; set; } = new List<TreeItemData>();
 
-    public TreeItemData(string text)
+        public TreeItemData(string text)
     {
       Text = text;
     }

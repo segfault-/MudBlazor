@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -158,7 +158,7 @@ namespace MudBlazor
         /// <summary>
         /// Called whenever the selectedvalues changed.
         /// </summary>
-        [Parameter] public EventCallback<HashSet<T>> SelectedValuesChanged { get; set; }
+        [Parameter] public EventCallback<ICollection<T>> SelectedValuesChanged { get; set; }
 
         /// <summary>
         /// Child content of component.
@@ -178,7 +178,7 @@ namespace MudBlazor
 
         [Parameter]
         [Category(CategoryTypes.TreeView.Data)]
-        public Func<T, Task<HashSet<T>>> ServerData { get; set; }
+        public Func<T, Task<ICollection<T>>> ServerData { get; set; }
 
         public MudTreeView()
         {
@@ -227,7 +227,7 @@ namespace MudBlazor
 
         internal Task UpdateSelectedItems()
         {
-            _selectedValues ??= new HashSet<MudTreeViewItem<T>>();
+            _selectedValues ??= new List<MudTreeViewItem<T>>();
 
             //collect selected items
             _selectedValues.Clear();
@@ -239,7 +239,7 @@ namespace MudBlazor
                 }
             }
 
-            return SelectedValuesChanged.InvokeAsync(new HashSet<T>(_selectedValues.Select(i => i.Value)));
+            return SelectedValuesChanged.InvokeAsync(new List<T>(_selectedValues.Select(i => i.Value)));
         }
 
         public async Task Select(MudTreeViewItem<T> item, bool isSelected = true)

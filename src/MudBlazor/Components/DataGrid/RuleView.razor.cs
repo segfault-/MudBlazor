@@ -108,7 +108,7 @@ namespace MudBlazor
                 return base.OnParametersSetAsync();
             }
 
-            if (TypeIdentifier.IsString(Leaf.Value.FilterDefinition.dataType))
+            if (Leaf.Value.FilterDefinition.FieldType.IsString)
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -119,7 +119,7 @@ namespace MudBlazor
                     _valueString = Leaf.Value.Value?.ToString();
                 }
             }
-            else if (TypeIdentifier.IsNumber(Leaf.Value.FilterDefinition.dataType))
+            else if (Leaf.Value.FilterDefinition.FieldType.IsNumber)
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -130,7 +130,7 @@ namespace MudBlazor
                     _valueNumber = Leaf.Value.Value == null ? null : Convert.ToDouble(Leaf.Value.Value);
                 }
             }
-            else if (TypeIdentifier.IsEnum(Leaf.Value.FilterDefinition.dataType))
+            else if (Leaf.Value.FilterDefinition.FieldType.IsEnum)
             {
                 if (Leaf.Value.Value == null)
                 {
@@ -172,15 +172,15 @@ namespace MudBlazor
                         }
                         else
                         {
-                            var t = Leaf.Value.FilterDefinition.dataType;
-                            var tt = Nullable.GetUnderlyingType(t) ?? t;
+                            var t = Leaf.Value.FilterDefinition.FieldType;
+                            var tt = t.InnerType;
                             var v = (Enum)Enum.ToObject(tt, ((JsonElement)Leaf.Value.Value).GetInt32());
                             _valueEnum = v;
                         }
                     }
                 }
             }
-            else if (TypeIdentifier.IsBoolean(Leaf.Value.FilterDefinition.dataType))
+            else if (Leaf.Value.FilterDefinition.FieldType.IsBoolean)
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {
@@ -191,7 +191,7 @@ namespace MudBlazor
                     _valueBool = Leaf.Value.Value == null ? null : Convert.ToBoolean(Leaf.Value.Value);
                 }
             }
-            else if (TypeIdentifier.IsDateTime(Leaf.Value.FilterDefinition.dataType))
+            else if (Leaf.Value.FilterDefinition.FieldType.IsDateTime)
             {
                 if (Leaf.Value.Value is JsonElement element)
                 {

@@ -17,9 +17,9 @@
 @code {
     private TreeItemData ActivatedValue { get; set; }
 
-    private HashSet<TreeItemData> SelectedValues { get; set; }
+    private ICollection<TreeItemData> SelectedValues { get; set; }
 
-    private HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
+    private ICollection<TreeItemData> TreeItems { get; set; } = new List<TreeItemData>();
 
     public class TreeItemData
     {
@@ -31,7 +31,7 @@
 
         public bool IsExpanded { get; set; }
 
-        public HashSet<TreeItemData> TreeItems { get; set; }
+        public ICollection<TreeItemData> TreeItems { get; set; }
 
         public TreeItemData(string title, string icon, int? number = null)
         {
@@ -48,7 +48,7 @@
         TreeItems.Add(new TreeItemData("Categories", Icons.Material.Filled.Label)
         {
             IsExpanded = true,
-            TreeItems = new HashSet<TreeItemData>()
+                TreeItems = new List<TreeItemData>()
             {
                 new TreeItemData("Social", Icons.Material.Filled.Group, 90),
                 new TreeItemData("Updates", Icons.Material.Filled.Info, 2294),

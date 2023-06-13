@@ -10,7 +10,7 @@
 
 
 @code{
-    private HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
+    private List<TreeItemData> TreeItems { get; set; } = new List<TreeItemData>();
 
     public class TreeItemData
     {
@@ -22,7 +22,7 @@
         
         public bool CanExpand { get; set; }
 
-        public HashSet<TreeItemData> TreeItems { get; set; }
+        public List<TreeItemData> TreeItems { get; set; }
 
         public TreeItemData(string title, string icon, int? number = null, bool canExpand = true)
         {
@@ -39,7 +39,7 @@
         TreeItems.Add(new TreeItemData("Trash", Icons.Material.Filled.Delete));
         TreeItems.Add(new TreeItemData("Categories", Icons.Material.Filled.Label)
         {
-            TreeItems = new HashSet<TreeItemData>()
+            TreeItems = new List<TreeItemData>()
             {
                 new TreeItemData("Social", Icons.Material.Filled.Group, 90),
                 new TreeItemData("Updates", Icons.Material.Filled.Info, 2294),
@@ -50,9 +50,9 @@
         TreeItems.Add(new TreeItemData("History", Icons.Material.Filled.Label, null, false));
     }
 
-    public async Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)
+    public async Task<ICollection<TreeItemData>> LoadServerData(TreeItemData parentNode)
     {
-        await Task.Delay(500);
+        await Task.Delay(98);
         return parentNode.TreeItems;
     }
 }
