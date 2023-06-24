@@ -37,6 +37,14 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
     public PopoverOptions PopoverOptions { get; }
 
     /// <summary>
+    /// Gets the number of items currently queued in the <see cref="_batchExecutor"/> for processing in the <see cref="OnBatchTimerElapsedAsync"/> method.
+    /// </summary>
+    /// <remarks>
+    /// This property is not exposed in the public API of the <see cref="IPopoverService"/> interface and is intended for internal use only.
+    /// </remarks>
+    public int QueueCount => _batchExecutor.Count;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PopoverService"/> class.
     /// </summary>
     /// <param name="logger">The logger used for logging.</param>
@@ -48,7 +56,7 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
         _semaphore = new SemaphoreSlim(1, 1);
         _holders = new Dictionary<Guid, MudPopoverHolder>();
         _popoverJsInterop = new PopoverJsInterop(jsInterop);
-        _batchExecutor = new BatchPeriodicQueue<MudPopoverHolder>(this, PopoverOptions.QueueDelay);
+        _batchExecutor = new BatchPeriodicQueue<MudPopoverHolder>(this, PopoverOptions.QueueDelay, tickOnDispose: false);
         _observerManager = new ObserverManager<Guid, IPopoverObserver>(logger);
     }
 
@@ -79,7 +87,7 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
             .SetUserAttributes(popover.UserAttributes);
 
         _holders.TryAdd(holder.Id, holder);
-        await _observerManager.NotifyAsync(observer => observer.PopoverCollectionUpdatedNotification(new[] { holder }));
+        await _observerManager.NotifyAsync(observer => observer.PopoverCollectionUpdatedNotificationAsync(new PopoverHolderContainer(PopoverHolderOperation.Create, new[] { holder })));
     }
 
     /// <inheritdoc />
@@ -106,7 +114,6 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
 
         try
         {
-
             await _semaphore.WaitAsync();
 
             holder
@@ -117,12 +124,7 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
                 .SetTag(popover.Tag)
                 .SetUserAttributes(popover.UserAttributes);
 
-            //This basically calls StateHasChanged on the popover.
-            //To be honest, there's no real need for us to update each popover individually through MudRendered as we currently do.
-            //Instead, we can consider invoking PopoverCollectionUpdatedNotification (or make new function).
-            //This function would trigger a StateHasChanged on the entire MudPopoverProvider, effectively updating all the underlying popovers at once.
-            //By performing these updates in batches, we can minimize the number of re-renders to a minimum.
-            holder.ElementReference?.StateHasChanged();
+            await _observerManager.NotifyAsync(observer => observer.PopoverCollectionUpdatedNotificationAsync(new PopoverHolderContainer(PopoverHolderOperation.Update, new[] { holder })));
 
             return true;
         }
@@ -163,13 +165,14 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
             return;
         }
 
-        //Queue all lefts overs.
         foreach (var holderKeyValuePair in _holders)
         {
-            await DestroyPopoverByIdAsync(holderKeyValuePair.Key);
+            //We just remove them from the dictionary, we don't care to queue for "mudPopover.disconnect" as the "mudPopover.dispose" will do it for us
+            await DestroyPopoverByIdAsync(holderKeyValuePair.Key, queueForDisconnect: false);
         }
 
-        //Cleanup and call the OnBatchTimerElapsedAsync with everything what's left.
+        //BatchPeriodicQueue(tickOnDispose) should be false, since BatchPeriodicQueue.OnBatchTimerElapsedAsync will cause deadlock on WinForm and WPF.
+        //We do not care about guaranteed "mudPopover.disconnect" JS call on all popovers from OnBatchTimerElapsedAsync -> DetachRange as the "mudPopover.dispose" already does it on JS side.
         await _batchExecutor.DisposeAsync();
 
         _ = _popoverJsInterop.Dispose();
@@ -185,21 +188,24 @@ internal class PopoverService : IPopoverService, IBatchTimerHandler<MudPopoverHo
         return DetachRange(items);
     }
 
-    private async Task<bool> DestroyPopoverByIdAsync(Guid id)
+    private async Task<bool> DestroyPopoverByIdAsync(Guid id, bool queueForDisconnect = true)
     {
         if (!_holders.Remove(id, out var holder))
         {
             return false;
         }
 
-        _batchExecutor.QueueItem(holder);
+        if (queueForDisconnect)
+        {
+            _batchExecutor.QueueItem(holder);
+        }
         // Although it is not completely detached from the JS side until OnBatchTimerElapsedAsync fires, we mark it as "Detached"
         // because we want let know the UpdatePopoverAsync method that there is no need to update it anymore,
         // as it is no longer being rendered by MudPopoverProvider since it has been removed from the ActivePopovers collection.
         // Perhaps we could consider adding a state indicating that the object is queued for detaching instead.
         holder.IsDetached = true;
 
-        await _observerManager.NotifyAsync(observer => observer.PopoverCollectionUpdatedNotification(new[] { holder }));
+        await _observerManager.NotifyAsync(observer => observer.PopoverCollectionUpdatedNotificationAsync(new PopoverHolderContainer(PopoverHolderOperation.Remove, new[] { holder })));
 
         return true;
     }
