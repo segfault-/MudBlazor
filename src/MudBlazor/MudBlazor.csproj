@@ -7,7 +7,7 @@
   <PropertyGroup>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>Nuget.png</PackageIcon>
-    <Version>6.4.1-dev1-snow-dg.2</Version>
+    <Version>6.5.0-dev1-snow-dg.1</Version>
     <Company>MudBlazor</Company>
     <Authors>Garderoben, Henon and Contributors</Authors>
     <Copyright>Copyright 2022 MudBlazor</Copyright>
