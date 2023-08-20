@@ -381,6 +381,11 @@ namespace MudBlazor
         [Parameter] public int OverscanCount { get; set; } = 3;
 
         /// <summary>
+        /// Gets the size of each item in pixels. Defaults to 50px.
+        /// </summary>
+        [Parameter] public float ItemSize { get; set; } = 50f;
+
+        /// <summary>
         /// CSS class for the table rows. Note, many CSS settings are overridden by MudTd though
         /// </summary>
         [Parameter] public string RowClass { get; set; }
@@ -404,6 +409,11 @@ namespace MudBlazor
         /// Set to true to enable selection of multiple rows.
         /// </summary>
         [Parameter] public bool MultiSelection { get; set; }
+
+        /// <summary>
+        /// When true, row-click also toggles the checkbox state
+        /// </summary>
+        [Parameter] public bool SelectOnRowClick { get; set; } = true;
 
         /// <summary>
         /// When the grid is not read only, you can specify what type of editing mode to use.
@@ -983,9 +993,18 @@ namespace MudBlazor
         internal async Task SetSelectedItemAsync(bool value, T item)
         {
             if (value)
+            {
                 Selection.Add(item);
+                SelectedItem = item;
+            }
             else
+            {
                 Selection.Remove(item);
+                if (item.Equals(SelectedItem))
+                {
+                    SelectedItem = default;
+                }
+            }
 
             await InvokeAsync(() => SelectedItemsChangedEvent.Invoke(SelectedItems));
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
@@ -996,7 +1015,7 @@ namespace MudBlazor
         {
             var items = ServerData != null
                     ? ServerItems
-                    : Items;
+                    : FilteredItems;
 
             if (value)
                 Selection = new HashSet<T>(items);
@@ -1006,6 +1025,7 @@ namespace MudBlazor
             SelectedItemsChangedEvent?.Invoke(SelectedItems);
             SelectedAllItemsChangedEvent?.Invoke(value);
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
+
             StateHasChanged();
         }
 
@@ -1127,14 +1147,24 @@ namespace MudBlazor
         /// <summary>
         /// Sets the rows displayed per page when the data grid has an attached data pager.
         /// </summary>
-        /// <param name="size"></param>
-        public async Task SetRowsPerPageAsync(int size)
+        /// <param name="size">The page size.</param>
+        public Task SetRowsPerPageAsync(int size) => SetRowsPerPageAsync(size, true);
+
+        /// <summary>
+        /// Sets the rows displayed per page when the data grid has an attached data pager.
+        /// </summary>
+        /// <param name="size">The page size.</param>
+        /// <param name="resetPage">If <see langword="true"/>, resets <see cref="CurrentPage"/> to 0.</param>
+        public async Task SetRowsPerPageAsync(int size, bool resetPage)
         {
             if (_rowsPerPage == size)
                 return;
 
             _rowsPerPage = size;
-            CurrentPage = 0;
+
+            if (resetPage)
+                CurrentPage = 0;
+
             StateHasChanged();
 
             if (_isFirstRendered)
@@ -1221,7 +1251,7 @@ namespace MudBlazor
         /// <returns></returns>
         public async Task SetSelectedItemAsync(T item)
         {
-            if (MultiSelection)
+            if (MultiSelection && SelectOnRowClick)
             {
                 if (Selection.Contains(item))
                 {
