@@ -49,7 +49,7 @@ namespace MudBlazor
             {
                 MemberExpression me = unaryExpression.Operand as MemberExpression;
 
-                _fullPropertyName = unaryExpression.Operand.Type.FullName;
+                //_fullPropertyName = unaryExpression.Operand.Type.FullName;
                 _propertyName = me.Member.Name;
                 Title ??= _propertyName;
             }
