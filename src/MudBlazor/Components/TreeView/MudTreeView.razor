@@ -6,10 +6,9 @@
     <CascadingValue Value="@MudTreeRoot" IsFixed="true">
         @if (ItemTemplate != null && Items != null)
         {
-            @foreach (var item in Items)
-            {
+            <MudVirtualize IsEnabled="true" Items="@Items" OverscanCount="3" ItemSize="50f" Context="item">
                 @ItemTemplate(item)
-            }
+             </MudVirtualize>
         }
         else if (ChildContent != null)
         {
