@@ -18,7 +18,7 @@
         {
             @if (ToolBarContent != null)
             {
-                <MudToolBar Class="mud-table-toolbar" Style="@_headerFooterStyle">
+                <MudToolBar Class="mud-table-toolbar" Style="position: sticky; left: 0">
                     @ToolBarContent
                     @if (ShowMenuIcon)
                     {
@@ -91,7 +91,7 @@
                                 @if (_columnsPanelVisible)
                                 {
                                     <MudOverlay Visible="true" OnClick="@(() => _columnsPanelVisible = false)"></MudOverlay>
-                                    <MudPaper Class="pa-2 columns-panel" Style="position:absolute;max-width:450px;z-index:var(--mud-zindex-drawer)" Elevation="4">
+                                    <MudPaper Class="pa-2 columns-panel" Style="position:absolute;max-height:250px;overflow-y:scroll;max-width:450px;z-index:var(--mud-zindex-drawer)" Elevation="4">
                                         <MudGrid Spacing="0">
                                             @foreach (var column in RenderedColumns)
                                             {
