@@ -8,7 +8,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>Nuget.png</PackageIcon>
     <Company>MudBlazor</Company>
-    <Version>6.9.0-dev1-snow-dg.1</Version>
+    <Version>6.11.0-dev1-snow-dg.1</Version>
     <Authors>Garderoben, Henon and Contributors</Authors>
     <Copyright>Copyright 2022 MudBlazor</Copyright>
     <PackageTags>Blazor, MudBlazor, Material, Material Design, Components, Blazor Components, Blazor Library</PackageTags>
