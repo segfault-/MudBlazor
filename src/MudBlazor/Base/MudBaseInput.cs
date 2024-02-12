@@ -13,7 +13,12 @@ namespace MudBlazor
     public abstract class MudBaseInput<T> : MudFormComponent<T, string>
     {
         private bool _isDirty;
-
+        /// <summary>
+        /// this flag is set to true by validation in order to prevent multiple invocations of validation after a single
+        /// value change. When the value changes _validated is set back to false.
+        /// </summary>
+        private bool _validated; 
+        
         protected MudBaseInput() : base(new DefaultConverter<T>()) { }
 
         /// <summary>
@@ -222,6 +227,7 @@ namespace MudBlazor
             if (Text != text)
             {
                 Text = text;
+                _validated = false;
                 if (!string.IsNullOrWhiteSpace(Text))
                     Touched = true;
                 if (updateValue)
@@ -273,11 +279,14 @@ namespace MudBlazor
             if (ReadOnly)
                 return;
             _isFocused = false;
-
+            
             if (!OnlyValidateIfDirty || _isDirty)
             {
                 Touched = true;
-                await BeginValidationAfterAsync(OnBlur.InvokeAsync(obj));
+                if (_validated)
+                    await OnBlur.InvokeAsync(obj);
+                else
+                    await BeginValidationAfterAsync(OnBlur.InvokeAsync(obj));
             }
         }
 
@@ -319,6 +328,13 @@ namespace MudBlazor
             OnKeyPress.InvokeAsync(obj).AndForget();
         }
 
+        protected internal virtual void InvokeKeyPressObsolete(KeyboardEventArgs obj)
+        {
+#pragma warning disable CS0618
+            InvokeKeyPress(obj);
+#pragma warning restore CS0618
+        }
+
         /// <summary>
         /// Prevent the default action for the KeyPress event.
         /// </summary>
@@ -326,6 +342,20 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Behavior)]
         [Obsolete("This will be removed in v7")]
         public bool KeyPressPreventDefault { get; set; }
+
+        internal bool KeyPressPreventDefaultObsolete
+        {
+#pragma warning disable CS0618
+            get
+            {
+                return KeyPressPreventDefault;
+            }
+            set
+            {
+                KeyPressPreventDefault = value;
+            }
+#pragma warning restore CS0618
+        }
 
         /// <summary>
         /// Fired on the KeyUp event.
@@ -374,6 +404,7 @@ namespace MudBlazor
             if (!EqualityComparer<T>.Default.Equals(Value, value) || force == true)
             {
                 _isDirty = true;
+                _validated = false;
                 Value = value;
                 await ValueChanged.InvokeAsync(Value);
                 if (updateText)
@@ -440,12 +471,12 @@ namespace MudBlazor
             return changed;
         }
 
-        protected override Task ValidateValue()
+        protected override async Task ValidateValue()
         {
-            if (SubscribeToParentForm)
-                return base.ValidateValue();
-
-            return Task.CompletedTask;
+            if (SubscribeToParentForm) {
+                await base.ValidateValue();
+                _validated = true;
+            }
         }
 
         protected override async Task OnInitializedAsync()
@@ -521,6 +552,7 @@ namespace MudBlazor
         {
             SetTextAsync(null, updateValue: true).AndForget();
             this._isDirty = false;
+            this._validated = false;
             base.ResetValue();
         }
 
@@ -528,6 +560,7 @@ namespace MudBlazor
         {
             await SetTextAsync(null, updateValue: true);
             this._isDirty = false;
+            this._validated = false;
             await base.ResetValueAsync();
         }
     }

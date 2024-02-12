@@ -157,7 +157,7 @@ namespace MudBlazor
             }
         }
 
-        private string sortIconClass
+        internal string sortIconClass
         {
             get
             {
@@ -176,7 +176,7 @@ namespace MudBlazor
             }
         }
 
-        private bool hasFilter
+        internal bool hasFilter
         {
             get
             {
@@ -434,11 +434,13 @@ namespace MudBlazor
         internal void GroupColumn()
         {
             Column?.SetGrouping(true);
+            DataGrid.DropContainerHasChanged();
         }
 
         internal void UngroupColumn()
         {
             Column?.SetGrouping(false);
+            DataGrid.DropContainerHasChanged();
         }
 
         private void MarkAsUnsorted()
